@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Function Health Lab Exporter",
+  "version": "1.0.0",
+  "description": "Export Function Health biomarker data to Google Sheets with full auto-refresh.",
+  
+  "permissions": ["identity", "storage", "scripting"],
+  
+  "host_permissions": [
+    "https://my.functionhealth.com/*",
+    "https://production-member-app-mid-*.a.run.app/*",
+    "https://sheets.googleapis.com/*"
+  ],
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["https://my.functionhealth.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  
+  "action": {
+    "default_title": "Function Health Export"
+  },
+  
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  
+  "oauth2": {
+    "client_id": "YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/spreadsheets"]
+  }
+}
