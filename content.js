@@ -47,15 +47,29 @@ function injectExportButton() {
     btn.textContent = "Exporting...";
 
     try {
-      // Fetch data from Function Health API
+      // Get Firebase ID token from localStorage
+      const userDataStr = localStorage.getItem('userData');
+      if (!userDataStr) {
+        throw new Error('Not logged in - please refresh the page and try again');
+      }
+      
+      const userData = JSON.parse(userDataStr);
+      const idToken = userData.idToken;
+      
+      if (!idToken) {
+        throw new Error('Authentication token not found - please log out and log back in');
+      }
+
+      // Fetch data from Function Health API with authentication
       const url = "https://production-member-app-mid-lhuqotpy2a-ue.a.run.app/api/v1/results-report";
       
       // Required headers for Function Health API authentication
-      // The fe-app-version header is critical - without it, the API returns 401 Unauthorized
+      // The Authorization header with Firebase ID token is critical for authentication
       const res = await fetch(url, {
         credentials: "include",
         headers: {
           "Accept": "application/json",
+          "Authorization": `Bearer ${idToken}`,
           "fe-app-version": "0.84.70",
           "origin": "https://my.functionhealth.com",
           "referer": "https://my.functionhealth.com/",
