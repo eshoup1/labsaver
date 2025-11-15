@@ -8,7 +8,7 @@
   
   "host_permissions": [
     "https://my.functionhealth.com/*",
-    "https://production-member-app-mid-*.a.run.app/*",
+    "https://production-member-app-mid-lhuqotpy2a-ue.a.run.app/*",
     "https://sheets.googleapis.com/*"
   ],
   
@@ -35,7 +35,7 @@
   },
   
   "oauth2": {
-    "client_id": "YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "client_id": "699618980300-c7jn8t9kccdfm00c0704a29mduovqpe4.apps.googleusercontent.com",
     "scopes": ["https://www.googleapis.com/auth/spreadsheets"]
   }
 }
