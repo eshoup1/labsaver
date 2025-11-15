@@ -49,10 +49,17 @@ function injectExportButton() {
     try {
       // Fetch data from Function Health API
       const url = "https://production-member-app-mid-lhuqotpy2a-ue.a.run.app/api/v1/results-report";
-      const res = await fetch(url, { 
+      
+      // Required headers for Function Health API authentication
+      // The fe-app-version header is critical - without it, the API returns 401 Unauthorized
+      const res = await fetch(url, {
         credentials: "include",
         headers: {
-          "Accept": "application/json"
+          "Accept": "application/json",
+          "fe-app-version": "0.84.70",
+          "origin": "https://my.functionhealth.com",
+          "referer": "https://my.functionhealth.com/",
+          "x-backend-skip-cache": "true"
         }
       });
 
