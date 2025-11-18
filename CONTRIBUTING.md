@@ -1,4 +1,4 @@
-# Contributing to Function Health Lab Exporter
+# Contributing to LabSaver
 
 Thank you for your interest in contributing! This document provides guidelines for contributing to this project.
 
@@ -17,7 +17,7 @@ Thank you for your interest in contributing! This document provides guidelines f
    - Navigate to `chrome://extensions/`
    - Enable "Developer mode"
    - Click "Load unpacked"
-   - Select the `function-health-exporter` directory
+   - Select the `labsaver` directory
 
 2. Set up OAuth credentials (see README.md)
 

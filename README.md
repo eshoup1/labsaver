@@ -1,198 +1,262 @@
-# Function Health Lab Exporter
+# LabSaver - Health Data Exporter
 
-Chrome extension to export your complete Function Health biomarker history to Google Sheets.
+A Chrome extension that exports lab results from multiple health providers to Google Sheets. Currently supports **Function Health** and **Sutter Health**.
 
 ## Features
 
-- ✅ One-click export of all biomarker data
-- ✅ Complete historical results with dates
-- ✅ Numeric values, units, and reference ranges
-- ✅ Status indicators (in/out/above/below range)
-- ✅ Auto-refresh (replaces sheet data on each export)
-- ✅ 100% local processing (no external servers)
-- ✅ Direct Google Sheets integration via OAuth
+### Function Health Export
+- Exports all biomarker results from Function Health
+- Creates multiple sheets:
+  - `FH_Values` - All lab results with full history
+  - `FH_Definitions` - Biomarker definitions and reference ranges
+  - `FH_Latest` - Most recent value for each biomarker
+  - `FH_Table` - Pivot table view (biomarkers × dates)
+  - `FH_Grouped` - Results grouped by category
+- **NEW:** Automatic LOINC code derivation for standardized lab identification
+
+### Sutter Health Export
+- Exports all lab results from Sutter Health MyChart
+- Creates sheet:
+  - `SH_Export` - All component-level lab results
+- **NEW:** Automatic LOINC code derivation for standardized lab identification
+
+### LOINC Derivation (NEW)
+- Automatically adds standardized LOINC codes to exported lab results
+- Enables cross-system comparison between Function Health and Sutter Health data
+- Uses exact mapping (no guessing) - returns empty string when no mapping exists
+- Adds `Derived_LOINC` column as the last column (position 22) in both sheets
+- **Automated Quest LOINC Mapping**: Build-time script generates mappings from Quest Diagnostics API
+- Customizable mapping files for each health system
+- See [QUEST_LOINC_MAPPING.md](./QUEST_LOINC_MAPPING.md) for Quest mapping documentation
+- See [LOINC_VERIFICATION.md](./LOINC_VERIFICATION.md) for verification guide
+- See [LOINC_MAPPINGS.md](./LOINC_MAPPINGS.md) for complete mapping reference
+
+### Shared Features
+- Both exporters write to the same Google Sheet (stored as `masterSheetId`)
+- Data is kept separate using tab prefixes (`FH_` and `SH_`)
+- One-click export with automatic authentication
+- No data merging (yet) - each system maintains its own tabs
 
 ## Installation
 
-### Step 1: Load Extension in Chrome
+### Option 1: Chrome Web Store (Recommended)
 
-1. Download or clone this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" (toggle in top right)
-4. Click "Load unpacked"
-5. Select the `function-health-exporter` folder
-6. Note the Extension ID (you'll need this for OAuth setup)
+**Coming Soon!** Once published, you'll be able to install directly from the Chrome Web Store:
 
-### Step 2: Set Up Google OAuth
+1. Visit the [LabSaver Chrome Web Store page](#) (link will be added after publication)
+2. Click "Add to Chrome"
+3. Click "Add extension" to confirm
+4. The extension icon will appear in your Chrome toolbar
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable the **Google Sheets API**:
-   - Navigate to "APIs & Services" > "Library"
-   - Search for "Google Sheets API"
-   - Click "Enable"
+### Option 2: Developer Mode (For Development)
 
-4. Create OAuth 2.0 credentials:
-   - Go to "APIs & Services" > "Credentials"
-   - Click "Create Credentials" > "OAuth client ID"
-   - Application type: **Chrome Extension**
-   - Name: "Function Health Exporter"
-   - Extension ID: Paste the ID from Step 1
-   - Click "Create"
+If you want to use the development version or contribute to the project:
 
-5. Copy the Client ID (format: `xxxxx.apps.googleusercontent.com`)
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/labsaver.git
+   cd labsaver/lab-result-exporter
+   ```
 
-6. Update `manifest.json`:
-   - Open `manifest.json` in the extension folder
-   - Replace `YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com` with your actual Client ID
-   - Save the file
+2. Set up OAuth credentials (required):
+   - Follow the instructions in [OAUTH_SETUP.md](./OAUTH_SETUP.md)
+   - Update `manifest.json` with your OAuth client ID
 
-7. Reload the extension in Chrome:
-   - Go back to `chrome://extensions/`
-   - Click the reload icon on your extension
+3. Load the extension in Chrome:
+   - Open Chrome and navigate to `chrome://extensions/`
+   - Enable "Developer mode" in the top right
+   - Click "Load unpacked"
+   - Select the `lab-result-exporter` directory
+   - The extension will appear in your extensions list
 
-### Step 3: First Export (Auto-creates Sheet)
-
-1. Log in to [Function Health](https://my.functionhealth.com/)
-2. Navigate to any page on the Function Health site
-3. Click the blue "Export Function Labs" button
-4. On first use, you'll be prompted to authorize Google Sheets access
-5. The extension will automatically create a new Google Sheet named "Function Health Data"
-6. Wait for "Exported!" confirmation
-7. The console will log the Sheet URL, or find it in your Google Drive
-
-**Note:** The extension automatically creates and manages the Google Sheet. You don't need to create one manually. The Sheet ID is stored in Chrome storage and reused for all future exports.
+**Note:** For development installation, you must configure your own OAuth credentials. See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for detailed instructions.
 
 ## Usage
 
+### Function Health
 1. Log in to [Function Health](https://my.functionhealth.com/)
-2. Navigate to any page on the Function Health site
-3. Look for the blue "Export Function Labs" button in the bottom-right corner
-4. Click the button
-5. On first use, you'll be prompted to authorize Google Sheets access
-6. The extension will automatically create a new Google Sheet (first time only)
-7. Wait for "Exported!" confirmation (usually 2-3 seconds)
-8. Open your Google Sheet to view the data
+2. Click the "Export Labs" button that appears in the top-right corner
+3. Enter a name for your Google Sheet (or use the default)
+4. Authorize Google Sheets access if prompted
+5. Wait for the export to complete
 
-**Subsequent Exports:** Each time you click Export, the sheet is completely cleared and rewritten with the latest data from Function Health. This ensures your sheet always matches your current Function Health data exactly.
+### Sutter Health
+1. Log in to [Sutter Health MyHealthOnline](https://myhealthonline.sutterhealth.org/)
+2. Navigate to the Test Results section
+3. Click the "Export Sutter Labs" button that appears in the top-right corner
+4. The extension will use the same Google Sheet as Function Health exports
+5. Wait for the export to complete
 
-**Finding Your Sheet:**
-- Check your Google Drive for "Function Health Data"
-- Or look in the browser console for the Sheet URL (logged on first export)
+## Data Structure
 
-## How Exports Work
+### Function Health Columns (FH_Values)
+- biomarkerId, biomarkerName, primaryCategory
+- questBiomarkerCode, questBiomarkerId
+- dateOfService, testResultRaw, testResultNumeric
+- measurementUnits, statusLabel, testResultOutOfRange
+- rangeString, rangeMinDisplay, rangeMaxDisplay
+- questReferenceRange, improving, neutral
+- hasNewResults, type, requisitionId, createdAt
+- **Derived_LOINC** - Standardized LOINC code (when mapping exists)
 
-### Full Refresh Strategy
+### Sutter Health Columns (SH_Export)
+- orderKey, orderName, orderDisplayDate, resultStatus
+- componentID, componentName, componentCommonName, loincCode
+- value, numericValue, units
+- referenceRangeFormatted, referenceRangeLowDisplay, referenceRangeHighDisplay
+- abnormalFlagCategory, authorizingProviderName
+- resultTimestampDisplay, prioritizedInstantISO, prioritizedInstantDisplay
+- collectionTimestampsDisplay, resultingLabName
+- **Derived_LOINC** - Standardized LOINC code (when mapping exists)
 
-The extension uses a "full refresh" approach on every export:
+## Technical Details
 
-1. **Fetches latest data** from Function Health API
-2. **Clears the entire sheet** (removes all existing data)
-3. **Writes complete dataset** fresh from the API
+### Architecture
+- **Manifest V3** Chrome Extension
+- **Content Script** (`content.js`) - Injects export buttons and handles data fetching
+- **Background Service Worker** (`background.js`) - Processes data and writes to Google Sheets
+- **Google Sheets API** - For data storage and sharing
 
-### Behavior on Subsequent Exports
+### Storage
+- `masterSheetId` - The shared Google Sheet ID for both FH and SH exports
+- `spreadsheetId` - Temporary storage during FH export process
+- `lastSheetName` - Remembers the last sheet name used
 
-**Case 1: Data Unchanged**
-- If you export multiple times without new lab results, the sheet will contain identical data
-- The extension still clears and rewrites everything to ensure data integrity
-- No duplicates are created because the sheet is cleared first
+### API Endpoints
 
-**Case 2: Data Changed**
-- When you have new lab results from Function Health, the next export will include them
-- The sheet is cleared and rewritten with the complete updated dataset
-- All historical results are preserved (Function Health API returns full history)
+**Function Health:**
+- `https://production-member-app-mid-lhuqotpy2a-ue.a.run.app/api/v1/results-report`
 
-### Why Full Refresh?
-
-This approach ensures:
-- ✅ **No duplicates** - Sheet is always cleared before writing
-- ✅ **Data integrity** - Sheet always matches Function Health exactly
-- ✅ **Simplicity** - No complex change detection or merge logic
-- ✅ **Reliability** - Works consistently regardless of sheet state
-
-### Export Frequency
-
-You can export as often as you like:
-- **After new lab results** - To capture your latest biomarker data
-- **Before appointments** - To share current data with practitioners
-- **For analysis** - To refresh your dataset for charts/dashboards
-- **Anytime** - The extension handles all data management automatically
-
-**Note:** Each export completely replaces the sheet contents. If you've made manual edits to the sheet (formulas, formatting, notes), they will be lost on the next export. For custom analysis, consider copying the data to a separate sheet.
-
-## Data Schema
-
-The exported sheet contains these columns:
-
-| Column | Description |
-|--------|-------------|
-| biomarkerId | Unique biomarker identifier |
-| biomarkerName | Name (e.g., "Hematocrit") |
-| primaryCategory | Category (e.g., "Blood Health") |
-| questBiomarkerCode | Quest Diagnostics code |
-| questBiomarkerId | Quest biomarker ID |
-| dateOfService | Test date (YYYY-MM-DD) |
-| testResultRaw | Raw result value |
-| testResultNumeric | Extracted numeric value |
-| measurementUnits | Units (e.g., "mg/dL") |
-| statusLabel | IN_RANGE, OUT_OF_RANGE, BELOW_RANGE, ABOVE_RANGE |
-| testResultOutOfRange | Boolean flag |
-| rangeString | Reference range text |
-| rangeMinDisplay | Display minimum |
-| rangeMaxDisplay | Display maximum |
-| questReferenceRange | Quest reference range |
-| improving | Trend indicator |
-| neutral | No change indicator |
-| hasNewResults | Recent updates flag |
-| type | Category type code |
-| requisitionId | Test panel ID |
-| createdAt | Record creation timestamp |
-
-## Troubleshooting
-
-### "Export Failed" Error
-
-- Check that you're logged into Function Health
-- Ensure you've authorized Google Sheets access
-- Verify the Sheet has a tab named "Sheet1" (auto-created sheets have this by default)
-- Check Chrome DevTools console for detailed errors
-- If the sheet was deleted, clear Chrome storage and export again to create a new one:
-  ```javascript
-  chrome.storage.sync.remove('spreadsheetId')
-  ```
-
-### OAuth Issues
-
-- Verify Client ID in `manifest.json` matches Google Cloud Console
-- Ensure Extension ID is whitelisted in OAuth settings
-- Try removing and re-adding OAuth consent
-
-### No Button Appears
-
-- Refresh the Function Health page
-- Check that you're on `my.functionhealth.com`
-- Verify extension is enabled in `chrome://extensions/`
-
-### API Rate Limits
-
-- Google Sheets API has quotas (100 requests per 100 seconds per user)
-- Wait a minute between exports if you hit limits
+**Sutter Health:**
+- `POST /MHO/api/test-results/GetList` - Get list of lab orders
+- `POST /MHO/api/test-results/GetDetails` - Get details for each order
 
 ## Privacy & Security
 
-- All data processing happens locally in your browser
-- No external servers involved (except Google Sheets API)
-- Your health data is never transmitted to third parties
-- OAuth tokens are managed securely by Chrome
-- Extension only accesses Function Health when you click Export
+**Your privacy is our top priority.** This extension is designed with privacy-first principles:
 
-## Support
+### Data Processing
+- ✅ **All data processing happens locally** in your browser
+- ✅ **No data is sent to external servers** (except Google Sheets, which you control)
+- ✅ **No tracking or analytics** - we don't collect any usage data
+- ✅ **No user data storage** - the extension doesn't store your health data
 
-For issues or questions:
-1. Check the troubleshooting section above
-2. Review Chrome DevTools console for errors
-3. Verify all setup steps were completed correctly
+### What the Extension Does
+- Reads lab results from health portals using your existing browser session
+- Processes and formats the data entirely in your browser
+- Writes data only to your personal Google Sheet (which you own and control)
+
+### What the Extension Does NOT Do
+- ❌ Does not send data to any third-party servers
+- ❌ Does not track which tests you have or their values
+- ❌ Does not store your health information
+- ❌ Does not share data with anyone
+
+### Authentication
+- Uses your existing browser session cookies for health portal access
+- Uses OAuth 2.0 for Google Sheets access (standard Google security)
+- All credentials stay in your browser
+
+### Open Source
+- All code is open source and available for review
+- You can verify exactly what the extension does
+- No hidden functionality or data collection
+
+## Quest LOINC Mapping - Manual Workflow
+
+The extension uses a **manual, privacy-focused workflow** to generate Quest biomarker code to LOINC code mappings:
+
+### How It Works
+
+1. **Export your data**: Use the extension to export Function Health data to Google Sheets
+2. **Review the export**: Check the `Derived_LOINC` column - empty cells indicate unmapped Quest codes
+3. **Identify codes to map**: Note which Quest codes you want to add LOINC mappings for
+4. **Create input file**: Make a JSON or CSV file with those Quest codes
+5. **Run mapping script**: Use the build script to fetch Quest metadata and create mappings
+
+### Manual Mapping Process
+
+Create a JSON file with the Quest codes you want to map:
+
+**Example `my_quest_codes.json`:**
+```json
+[
+  {
+    "questBiomarkerCode": "12345678",
+    "biomarkerName": "Test Name",
+    "units": "mg/dL"
+  }
+]
+```
+
+Then run the mapping builder:
+
+```bash
+cd labsaver
+npm run build:quest-map -- --input data/my_quest_codes.json
+```
+
+This will:
+1. Fetch test metadata from Quest Diagnostics public API
+2. Apply strict validation rules (exact name/unit matching)
+3. Update [`data/quest_loinc_map.json`](data/quest_loinc_map.json) with new mappings
+4. Preserve all existing mappings
+
+### Why Manual?
+
+We chose a manual workflow to protect your privacy:
+- **No automatic tracking** of which tests you have
+- **You control** which codes to map
+- **No data collection** about your health conditions
+- **Privacy-first** design
+
+### Validation
+
+Validate the mapping file structure:
+
+```bash
+npm run validate:quest-map
+```
+
+For complete documentation, see [QUEST_LOINC_MAPPING.md](./QUEST_LOINC_MAPPING.md).
+
+## Future Enhancements
+
+- Data merging and normalization across systems using LOINC codes
+- Trend analysis and visualization
+- Additional health system support
+- Expanded LOINC mapping coverage
+- Automatic LOINC code suggestions for unmapped tests
+
+## Documentation
+
+- [Privacy Policy](./PRIVACY_POLICY.md) - How we handle your data
+- [OAuth Setup Guide](./OAUTH_SETUP.md) - Configure Google OAuth credentials
+- [Publication Guide](./PUBLICATION_GUIDE.md) - How to publish to Chrome Web Store
+- [Store Listing](./STORE_LISTING.md) - Chrome Web Store listing details
+- [Quest LOINC Mapping](./QUEST_LOINC_MAPPING.md) - Quest code mapping documentation
+- [LOINC Verification](./LOINC_VERIFICATION.md) - How to verify LOINC codes
+- [LOINC Mappings](./LOINC_MAPPINGS.md) - Complete mapping reference
+- [Contributing](./CONTRIBUTING.md) - Contribution guidelines
+- [Changelog](./CHANGELOG.md) - Version history
 
 ## License
 
-MIT License - Use freely for personal health data management
+MIT License - See [LICENSE](./LICENSE) file for details
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+## Support
+
+- **Issues:** [Open an issue on GitHub](https://github.com/YOUR_USERNAME/labsaver/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/YOUR_USERNAME/labsaver/discussions)
+- **Email:** [Your support email]
+
+## Acknowledgments
+
+- Function Health for providing comprehensive biomarker testing
+- Sutter Health for their patient portal
+- Quest Diagnostics for their public LOINC API
+- The LOINC community for standardized lab codes

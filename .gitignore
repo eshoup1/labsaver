@@ -1,3 +1,6 @@
+# Node.js
+node_modules/
+
 # macOS
 .DS_Store
 .AppleDouble
@@ -39,7 +42,9 @@ $RECYCLE.BIN/
 # Chrome Extension
 *.pem
 *.crx
-*.zip
+
+# Distribution packages (keep source, ignore built packages)
+labsaver-v*.zip
 
 # Logs
 *.log

@@ -7,8 +7,8 @@ Follow these steps to push this repository to GitHub.
 1. Go to [GitHub](https://github.com) and log in
 2. Click the "+" icon in the top right → "New repository"
 3. Repository settings:
-   - **Name**: `function-health-exporter` (or your preferred name)
-   - **Description**: "Chrome extension to export Function Health biomarker data to Google Sheets"
+   - **Name**: `labsaver` (or your preferred name)
+   - **Description**: "LabSaver - Chrome extension to export lab results to Google Sheets"
    - **Visibility**: Public (recommended) or Private
    - **DO NOT** initialize with README, .gitignore, or license (we already have these)
 4. Click "Create repository"
@@ -19,10 +19,10 @@ After creating the repository, GitHub will show you commands. Use these:
 
 ```bash
 # Navigate to the extension directory
-cd function-health-exporter
+cd labsaver
 
 # Add the remote repository (replace YOUR_USERNAME with your GitHub username)
-git remote add origin https://github.com/YOUR_USERNAME/function-health-exporter.git
+git remote add origin https://github.com/YOUR_USERNAME/labsaver.git
 
 # Push to GitHub
 git branch -M main
@@ -51,8 +51,8 @@ Update the README.md to include:
 If you have GitHub CLI installed:
 
 ```bash
-cd function-health-exporter
-gh repo create function-health-exporter --public --source=. --remote=origin --push
+cd labsaver
+gh repo create labsaver --public --source=. --remote=origin --push
 ```
 
 ## Troubleshooting
@@ -64,9 +64,9 @@ gh repo create function-health-exporter --public --source=. --remote=origin --pu
 **Remote Already Exists:**
 ```bash
 git remote remove origin
-git remote add origin https://github.com/YOUR_USERNAME/function-health-exporter.git
+git remote add origin https://github.com/YOUR_USERNAME/labsaver.git
 ```
 
 **Need to Change Remote URL:**
 ```bash
-git remote set-url origin https://github.com/YOUR_USERNAME/function-health-exporter.git
+git remote set-url origin https://github.com/YOUR_USERNAME/labsaver.git

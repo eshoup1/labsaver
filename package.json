@@ -1,0 +1,25 @@
+{
+  "name": "lab-result-exporter",
+  "version": "1.0.0",
+  "description": "Chrome extension to export lab results to Google Sheets",
+  "type": "module",
+  "scripts": {
+    "build:quest-map": "node scripts/buildQuestLoincMap.js",
+    "validate:quest-map": "node scripts/validateQuestLoincMap.js",
+    "test": "node tests/loinc-derivation.test.js",
+    "test:all": "npm run validate:quest-map && npm test"
+  },
+  "keywords": [
+    "chrome-extension",
+    "health-data",
+    "loinc",
+    "lab-results"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cheerio": "^1.0.0-rc.12"
+  },
+  "devDependencies": {}
+}

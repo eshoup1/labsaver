@@ -1,31 +1,36 @@
 {
   "manifest_version": 3,
-  "name": "Function Health Lab Exporter",
-  "version": "1.0.0",
-  "description": "Export Function Health biomarker data to Google Sheets with full auto-refresh.",
+  "name": "LabSaver - Health Data Exporter",
+  "version": "2.0.1",
+  "description": "Export lab results from multiple providers to Google Sheets.",
   
   "permissions": ["identity", "storage", "scripting"],
   
   "host_permissions": [
     "https://my.functionhealth.com/*",
     "https://production-member-app-mid-lhuqotpy2a-ue.a.run.app/*",
+    "https://myhealthonline.sutterhealth.org/*",
     "https://sheets.googleapis.com/*"
   ],
   
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   
   "content_scripts": [
     {
-      "matches": ["https://my.functionhealth.com/*"],
+      "matches": [
+        "https://my.functionhealth.com/*",
+        "https://myhealthonline.sutterhealth.org/*"
+      ],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
   ],
   
   "action": {
-    "default_title": "Function Health Export"
+    "default_title": "LabSaver - Export Health Data"
   },
   
   "icons": {
@@ -34,8 +39,21 @@
     "128": "icons/icon128.png"
   },
   
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*.png"],
+      "matches": [
+        "https://my.functionhealth.com/*",
+        "https://myhealthonline.sutterhealth.org/*"
+      ]
+    }
+  ],
+  
   "oauth2": {
-    "client_id": "699618980300-c7jn8t9kccdfm00c0704a29mduovqpe4.apps.googleusercontent.com",
-    "scopes": ["https://www.googleapis.com/auth/spreadsheets"]
+    "client_id": "YOUR_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/spreadsheets",
+      "https://www.googleapis.com/auth/userinfo.email"
+    ]
   }
 }
