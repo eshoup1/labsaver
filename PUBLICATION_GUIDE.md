@@ -126,8 +126,7 @@ zip -r labsaver-v2.0.1.zip . \
    - Is data sold? **NO**
    - Is data used for purposes unrelated to the item's core functionality? **NO**
 
-3. Privacy policy URL: Link to hosted PRIVACY_POLICY.md
-   - Host on GitHub Pages, your website, or a service like Netlify
+3. Privacy policy URL: https://github.com/eshoup1/labsaver/blob/main/lab-result-exporter/PRIVACY_POLICY.md
 
 **Single Purpose:**
 - Description: (Copy from STORE_LISTING.md - Single Purpose Description)

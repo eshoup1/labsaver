@@ -340,7 +340,6 @@ async function processSutterHealthExport(rows, sheetName = 'Lab Results') {
   
   // Add derived LOINC to each row
   console.log(`[SH_Export DEBUG] Processing ${rows.length} rows to add LOINC codes...`);
-  console.log(`[SH_Export DEBUG] First input row:`, rows[0]);
   
   const rowsWithLoinc = await Promise.all(rows.map(async (row, index) => {
     try {
@@ -352,15 +351,6 @@ async function processSutterHealthExport(rows, sheetName = 'Lab Results') {
       const derivedLoinc = await deriveLoincFromSH(rowObj);
       const newRow = [...row, derivedLoinc];
       
-      if (index === 0) {
-        console.log(`[SH_Export DEBUG] First row processing:`, {
-          originalLength: row.length,
-          newLength: newRow.length,
-          derivedLoinc: derivedLoinc,
-          rowObj: rowObj
-        });
-      }
-      
       return newRow;
     } catch (error) {
       console.error(`[SH_Export DEBUG] Error processing row ${index}:`, error);
@@ -370,10 +360,6 @@ async function processSutterHealthExport(rows, sheetName = 'Lab Results') {
   }));
   
   console.log(`[SH_Export DEBUG] After LOINC derivation: ${rowsWithLoinc.length} rows`);
-  if (rowsWithLoinc.length > 0) {
-    console.log(`[SH_Export DEBUG] First row with LOINC:`, rowsWithLoinc[0]);
-    console.log(`[SH_Export DEBUG] First row length: ${rowsWithLoinc[0].length}`);
-  }
   
   // Write data to SH_Export sheet
   console.log("\n--- Creating SH_Export Sheet ---");

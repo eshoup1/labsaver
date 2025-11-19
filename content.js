@@ -8,6 +8,12 @@ const isFunctionHealth = window.location.hostname === "my.functionhealth.com";
 const isSutterHealth = window.location.hostname === "myhealthonline.sutterhealth.org";
 
 function injectFunctionHealthButton() {
+  // Check if extension context is valid
+  if (!chrome?.runtime?.id) {
+    console.warn('Extension context invalidated - please reload the page');
+    return;
+  }
+  
   // Prevent duplicate buttons
   if (document.getElementById("fh-export-btn")) return;
 
@@ -96,8 +102,15 @@ function injectFunctionHealthButton() {
       return;
     }
     
-    // Trim whitespace and use default if empty
-    const finalSheetName = sheetName.trim() || 'Lab Results';
+    // Sanitize sheet name: remove invalid characters and limit length
+    // Google Sheets doesn't allow: < > : " / \ | ? *
+    let sanitizedName = sheetName
+      .replace(/[<>:"\/\\|?*]/g, '')  // Remove invalid characters
+      .trim()                          // Remove leading/trailing whitespace
+      .substring(0, 100);              // Limit to 100 characters
+    
+    // Use default if sanitized name is empty
+    const finalSheetName = sanitizedName || 'Lab Results';
     
     // Save the sheet name for next time via background script
     try {
@@ -203,6 +216,12 @@ function injectFunctionHealthButton() {
 }
 
 function injectSutterHealthButton() {
+  // Check if extension context is valid
+  if (!chrome?.runtime?.id) {
+    console.warn('Extension context invalidated - please reload the page');
+    return;
+  }
+  
   console.log('🔧 [SH BUTTON v2.0 - ' + Date.now() + '] Injecting button');
   console.log("🔧 [DEBUG] injectSutterHealthButton() called");
   console.log("🔧 [DEBUG] Current URL:", window.location.href);
@@ -324,8 +343,15 @@ function injectSutterHealthButton() {
       return;
     }
     
-    // Trim whitespace and use default if empty
-    const finalSheetName = sheetName.trim() || 'Lab Results';
+    // Sanitize sheet name: remove invalid characters and limit length
+    // Google Sheets doesn't allow: < > : " / \ | ? *
+    let sanitizedName = sheetName
+      .replace(/[<>:"\/\\|?*]/g, '')  // Remove invalid characters
+      .trim()                          // Remove leading/trailing whitespace
+      .substring(0, 100);              // Limit to 100 characters
+    
+    // Use default if sanitized name is empty
+    const finalSheetName = sanitizedName || 'Lab Results';
     
     // Save the sheet name for next time via background script
     try {

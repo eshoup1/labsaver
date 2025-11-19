@@ -226,7 +226,7 @@ English
 [Your support email]
 
 ## Privacy Policy URL
-[Link to hosted PRIVACY_POLICY.md]
+https://github.com/eshoup1/labsaver/blob/main/lab-result-exporter/PRIVACY_POLICY.md
 
 ## Permissions Justification
 

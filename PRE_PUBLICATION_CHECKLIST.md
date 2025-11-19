@@ -15,44 +15,44 @@ Use this checklist before submitting to the Chrome Web Store.
 
 ## 🔐 Security & Privacy
 
-- [ ] Privacy policy hosted at a publicly accessible URL
-- [ ] Privacy policy URL added to manifest.json (if required)
-- [ ] OAuth client ID configured for production
-- [ ] No hardcoded credentials in public code
-- [ ] All API keys and secrets removed
-- [ ] Security audit completed
-- [ ] No console.log statements with sensitive data
+- [x] Privacy policy hosted at a publicly accessible URL
+- [x] Privacy policy URL added to manifest.json (if required)
+- [x] OAuth client ID configured for production
+- [x] No hardcoded credentials in public code
+- [x] All API keys and secrets removed
+- [x] Security audit completed
+- [x] No console.log statements with sensitive data
 
 ## 📦 Code Quality
 
-- [ ] All features tested and working
-- [ ] Function Health export tested
-- [ ] Sutter Health export tested
-- [ ] OAuth flow tested
-- [ ] Error handling verified
-- [ ] No console errors in production
-- [ ] Code is minified (if applicable)
-- [ ] All dependencies are up to date
+- [x] All features tested and working
+- [x] Function Health export tested
+- [x] Sutter Health export tested
+- [x] OAuth flow tested
+- [x] Error handling verified
+- [x] No console errors in production
+- [x] Code is minified (if applicable)
+- [x] All dependencies are up to date
 
 ## 🎨 Assets
 
 ### Icons (Required)
-- [ ] icon16.png (16x16) created
-- [ ] icon48.png (48x48) created
-- [ ] icon128.png (128x128) created
-- [ ] All icons are PNG format
-- [ ] Icons are clear and recognizable
-- [ ] Icons follow Chrome Web Store guidelines
+- [x] icon16.png (16x16) created
+- [x] icon48.png (48x48) created
+- [x] icon128.png (128x128) created
+- [x] All icons are PNG format
+- [x] Icons are clear and recognizable
+- [x] Icons follow Chrome Web Store guidelines
 
 ### Screenshots (Required - 3-5 recommended)
-- [ ] Screenshot 1: Function Health export button (1280x800 or 640x400)
-- [ ] Screenshot 2: Google Sheets with exported data (1280x800 or 640x400)
-- [ ] Screenshot 3: LOINC codes in action (1280x800 or 640x400)
-- [ ] Screenshot 4: Sutter Health export (1280x800 or 640x400)
-- [ ] Screenshot 5: Privacy features (1280x800 or 640x400)
-- [ ] All screenshots are high quality
-- [ ] Screenshots show actual functionality
-- [ ] No placeholder or fake data in screenshots
+- [x] Screenshot 1: Function Health export button (1280x800 or 640x400)
+- [x] Screenshot 2: Google Sheets with exported data (1280x800 or 640x400)
+- [x] Screenshot 3: LOINC codes in action (1280x800 or 640x400)
+- [x] Screenshot 4: Sutter Health export (1280x800 or 640x400)
+- [x] Screenshot 5: Privacy features (1280x800 or 640x400)
+- [x] All screenshots are high quality
+- [x] Screenshots show actual functionality
+- [x] No placeholder or fake data in screenshots
 
 ### Promotional Images (Optional but Recommended)
 - [ ] Small tile (440x280) created
@@ -62,29 +62,29 @@ Use this checklist before submitting to the Chrome Web Store.
 
 ## 📝 Manifest.json
 
-- [ ] Version number is correct (semantic versioning)
-- [ ] Name is correct: "LabSaver - Health Data Exporter"
-- [ ] Description is clear and under 132 characters
-- [ ] All required permissions listed
-- [ ] All host permissions listed
-- [ ] OAuth client ID configured
-- [ ] OAuth scopes are correct
-- [ ] Icons paths are correct
-- [ ] Content scripts configured correctly
-- [ ] Background service worker configured
-- [ ] Manifest version is 3
+- [x] Version number is correct (semantic versioning)
+- [x] Name is correct: "LabSaver - Health Data Exporter"
+- [x] Description is clear and under 132 characters
+- [x] All required permissions listed
+- [x] All host permissions listed
+- [x] OAuth client ID configured
+- [x] OAuth scopes are correct
+- [x] Icons paths are correct
+- [x] Content scripts configured correctly
+- [x] Background service worker configured
+- [x] Manifest version is 3
 
 ## 🔑 OAuth Configuration
 
-- [ ] Google Cloud Project created
-- [ ] Google Sheets API enabled
-- [ ] OAuth consent screen configured
-- [ ] OAuth client ID created for Chrome extension
+- [x] Google Cloud Project created
+- [x] Google Sheets API enabled
+- [x] OAuth consent screen configured
+- [x] OAuth client ID created for Chrome extension
 - [ ] Extension ID added to OAuth client (for production)
-- [ ] Scopes configured correctly:
-  - [ ] https://www.googleapis.com/auth/spreadsheets
-  - [ ] https://www.googleapis.com/auth/userinfo.email
-- [ ] Test users added (for development)
+- [x] Scopes configured correctly:
+  - [x] https://www.googleapis.com/auth/spreadsheets
+  - [x] https://www.googleapis.com/auth/userinfo.email
+- [x] Test users added (if needed)
 - [ ] OAuth verification submitted (if required)
 
 ## 📊 Store Listing
@@ -113,49 +113,49 @@ Use this checklist before submitting to the Chrome Web Store.
 ## 🧪 Testing
 
 ### Functional Testing
-- [ ] Extension loads without errors
-- [ ] Function Health export works end-to-end
-- [ ] Sutter Health export works end-to-end
-- [ ] OAuth authentication flow works
-- [ ] Google Sheets creation works
-- [ ] Data is exported correctly
-- [ ] LOINC codes are derived correctly
-- [ ] Error messages are user-friendly
-- [ ] Extension works on different screen sizes
+- [x] Extension loads without errors
+- [x] Function Health export works end-to-end
+- [x] Sutter Health export works end-to-end
+- [x] OAuth authentication flow works
+- [x] Google Sheets creation works
+- [x] Data is exported correctly
+- [x] LOINC codes are derived correctly
+- [x] Error messages are user-friendly
+- [x] Extension works on different screen sizes
 
 ### Browser Testing
-- [ ] Tested on Chrome (latest version)
-- [ ] Tested on Chrome (previous version)
-- [ ] No console errors
-- [ ] No network errors
-- [ ] Performance is acceptable
+- [x] Tested on Chrome (latest version)
+- [x] Tested on Chrome (previous version)
+- [x] No console errors
+- [x] No network errors
+- [x] Performance is acceptable
 
 ### User Experience
-- [ ] Export buttons appear correctly
-- [ ] Loading states are clear
-- [ ] Success messages are shown
-- [ ] Error messages are helpful
-- [ ] Extension is intuitive to use
+- [x] Export buttons appear correctly
+- [x] Loading states are clear
+- [x] Success messages are shown
+- [x] Error messages are helpful
+- [x] Extension is intuitive to use
 
 ## 📦 Package Creation
 
-- [ ] Run `./package-extension.sh` to create distribution ZIP
-- [ ] Verify ZIP contains only necessary files:
-  - [ ] manifest.json
-  - [ ] background.js
-  - [ ] content.js
-  - [ ] loinc-derivation.js
-  - [ ] icons/ directory
-  - [ ] data/quest_loinc_map.json
-  - [ ] data/sh_loinc_map.json
-- [ ] Verify ZIP does NOT contain:
-  - [ ] Documentation files (*.md)
-  - [ ] Test files
-  - [ ] Build scripts
-  - [ ] Git files
-  - [ ] node_modules
-  - [ ] Development files
-- [ ] ZIP file size is reasonable (< 10MB)
+- [x] Run `./package-extension.sh` to create distribution ZIP
+- [x] Verify ZIP contains only necessary files:
+  - [x] manifest.json
+  - [x] background.js
+  - [x] content.js
+  - [x] loinc-derivation.js
+  - [x] icons/ directory
+  - [x] data/quest_loinc_map.json
+  - [x] data/sh_loinc_map.json
+- [x] Verify ZIP does NOT contain:
+  - [x] Documentation files (*.md)
+  - [x] Test files
+  - [x] Build scripts
+  - [x] Git files
+  - [x] node_modules
+  - [x] Development files
+- [x] ZIP file size is reasonable (< 10MB)
 
 ## 🚀 Chrome Web Store Account
 
