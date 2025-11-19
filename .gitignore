@@ -1,5 +1,8 @@
 # Node.js
 node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
 
 # macOS
 .DS_Store
@@ -54,3 +57,4 @@ yarn-error.log*
 
 # User-specific files (OAuth credentials)
 # Note: Users should update manifest.json with their own OAuth client ID
+data/user_quest_codes.json
