@@ -5,6 +5,23 @@ All notable changes to the LabSaver - Health Data Exporter extension will be doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2025-11-21
+
+### Fixed
+- **Chrome Web Store Compliance**: Removed unused `scripting` permission from manifest
+  - Extension was requesting but not using the `scripting` permission
+  - Chrome Web Store automated review flagged this as a policy violation
+  - Removed permission to comply with "Request access to the narrowest permissions necessary" policy
+
+### Changed
+- Updated version from 2.0.1 to 2.0.2
+- Repackaged extension for Chrome Web Store submission
+
+### Technical Details
+- **Violation Reference ID**: Purple Potassium
+- **Permissions**: Now only requests `identity` and `storage` (removed `scripting`)
+- **No Breaking Changes**: Extension functionality unchanged - uses declarative content scripts instead of dynamic script injection
+
 ## [2.1.1] - 2025-11-17
 
 ### Removed - Privacy Enhancement

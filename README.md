@@ -230,6 +230,7 @@ For complete documentation, see [QUEST_LOINC_MAPPING.md](./QUEST_LOINC_MAPPING.m
 
 ## Documentation
 
+- [FAQ](./FAQ.md) - Frequently asked questions
 - [Privacy Policy](./PRIVACY_POLICY.md) - How we handle your data
 - [OAuth Setup Guide](./OAUTH_SETUP.md) - Configure Google OAuth credentials
 - [Publication Guide](./PUBLICATION_GUIDE.md) - How to publish to Chrome Web Store
