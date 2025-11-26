@@ -25,6 +25,8 @@ Violating these rules can lead to broken builds, security vulnerabilities, or lo
 - **ALWAYS Use `git mv` for File Moves**: If you need to move or rename a file, always use `git mv`. This is crucial for maintaining file history, which is important for understanding the evolution of the codebase. A simple `mv` command can be interpreted by Git as a deletion and a creation, which obscures the file's history.
 
 - **NEVER Mix Dev/Prod OAuth Credentials**: The build system is designed to handle this automatically. The development OAuth client ID is in [`config/development.json`](config/development.json), and the production ID is in the untracked `config/production.json`. Do not copy credentials between these files or hardcode them anywhere else.
+  - **Development** ("Lab Saver" project): `699618980300-c7jn8t9kccdfm00c0704a29mduovqpe4.apps.googleusercontent.com`
+  - **Production** ("LabSaver Production" project): `609855124330-qhqklvllcvmft7v8f9k42csfqupu1p6d.apps.googleusercontent.com`
 
 ## 4. Directory Structure Rationale
 
