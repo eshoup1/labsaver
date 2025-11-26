@@ -1,22 +1,29 @@
-const fs = require('fs');
-const path = require('path');
-const archiver = require('archiver');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import archiver from 'archiver';
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Determine environment
 const env = process.env.NODE_ENV || 'development';
 console.log(`\n🔨 Building LabSaver for environment: ${env}\n`);
 
 // Load configurations
-const commonConfig = require('../config/common.json');
-const envConfigPath = path.join(__dirname, `../config/${env}.json`);
+const commonConfig = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '../config/common.json'), 'utf8')
+);
 
+const envConfigPath = path.join(__dirname, `../config/${env}.json`);
 if (!fs.existsSync(envConfigPath)) {
   console.error(`❌ ERROR: Configuration file not found: ${envConfigPath}`);
   console.error(`For production builds, create config/production.json with production OAuth credentials.`);
   process.exit(1);
 }
 
-const envConfig = require(envConfigPath);
+const envConfig = JSON.parse(fs.readFileSync(envConfigPath, 'utf8'));
 
 // Merge configurations
 const manifest = { ...commonConfig, ...envConfig };
