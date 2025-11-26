@@ -4,47 +4,207 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="qc8uxrNLJ5nCelb9wEuV-6hZ2EXRaSzC_5H9L_IVHB8" />
-    <title>LabSaver - Chrome Extension</title>
+    <title>LabSaver Chrome Extension</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 900px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 40px 20px;
             line-height: 1.6;
-        }
-        h1 {
             color: #333;
         }
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        h2 {
+            color: #34495e;
+            font-size: 1.8em;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #34495e;
+            font-size: 1.3em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        .hero-image {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            display: block;
+            margin: 30px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
         .description {
-            background-color: #f4f4f4;
-            padding: 15px;
-            border-radius: 5px;
+            background-color: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 30px 0;
+            font-size: 1.1em;
+            border-left: 4px solid #3498db;
+        }
+        ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        li {
+            margin: 10px 0;
+        }
+        ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        ol li {
+            margin: 12px 0;
+        }
+        .feature-section {
+            background-color: #fff;
+            padding: 20px;
             margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .checkmark {
+            color: #27ae60;
+        }
+        .crossmark {
+            color: #e74c3c;
+        }
+        section {
+            margin: 40px 0;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 15px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
         }
     </style>
 </head>
 <body>
     <h1>LabSaver Chrome Extension</h1>
+    
+    <img src="images/labsaver-overview.png" alt="LabSaver Overview - Export from Function Health and Sutter Health to Google Sheets" class="hero-image">
+    
     <div class="description">
-        <p>LabSaver is a Chrome extension that helps you export and manage your lab results from Quest Diagnostics and LabCorp.</p>
-        <p>This extension allows you to easily download your lab results in FHIR format for use with health tracking applications.</p>
+        <p><strong>LabSaver makes it easy to export your lab results from Function Health and Sutter Health directly to Google Sheets, giving you complete control over your health data.</strong></p>
     </div>
-    <h2>Features</h2>
-    <ul>
-        <li>Export lab results from Quest Diagnostics</li>
-        <li>Export lab results from LabCorp</li>
-        <li>FHIR-compliant data format</li>
-        <li>LOINC code mapping for standardized results</li>
-    </ul>
-    <h2>Privacy</h2>
-    <p>LabSaver respects your privacy. All data processing happens locally in your browser. No data is sent to external servers.</p>
-    <h2>Installation</h2>
-    <p>Install LabSaver from the Chrome Web Store.</p>
-    <h2>Links</h2>
-    <ul>
-        <li><a href="privacy.html">Privacy Policy</a></li>
-        <li><a href="https://github.com/eshoup1/labsaver" target="_blank">GitHub Repository</a></li>
-    </ul>
+
+    <section>
+        <h2>Key Features</h2>
+        <ul>
+            <li><span class="checkmark">✅</span> Export lab results from Function Health and Sutter Health</li>
+            <li><span class="checkmark">✅</span> Direct Google Sheets integration</li>
+            <li><span class="checkmark">✅</span> One-click export process</li>
+            <li><span class="checkmark">✅</span> Organize and track results over time</li>
+            <li><span class="checkmark">✅</span> Privacy-focused - no data stored by the extension</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>How It Works</h2>
+        <ol>
+            <li>Log into your Function Health or Sutter Health account</li>
+            <li>Navigate to test results. An "Export Labs" will appear.</li>
+            <li>Click the "Export Labs" button at the top of the page.</li>
+            <li>Authorize Google Sheets access (one time)</li>
+            <li>Your results are instantly exported to your spreadsheet</li>
+        </ol>
+    </section>
+
+    <section>
+        <h2>Privacy & Security</h2>
+        <ul>
+            <li><span class="checkmark">✅</span> All data processing happens locally in your browser</li>
+            <li><span class="checkmark">✅</span> Results go directly to YOUR Google Sheets account</li>
+            <li><span class="checkmark">✅</span> You maintain complete control of your health data</li>
+            <li><span class="crossmark">❌</span> No data collection or storage on our servers</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>What Gets Exported?</h2>
+        <ul>
+            <li>Test names and values</li>
+            <li>Units of measurement</li>
+            <li>Reference ranges</li>
+            <li>Out-of-range indicators</li>
+            <li>Test dates and timestamps</li>
+            <li>Provider information</li>
+            <li>LOINC codes for standardization where possible</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Feature Details</h2>
+        
+        <div class="feature-section">
+            <h3>1. Comprehensive Data Export</h3>
+            <ul>
+                <li>All lab results with complete history</li>
+                <li>Reference ranges and normal values</li>
+                <li>Test dates and ordering information</li>
+                <li>Organized into multiple sheets for easy analysis</li>
+            </ul>
+        </div>
+
+        <div class="feature-section">
+            <h3>2. Smart Organization</h3>
+            <ul>
+                <li>Labs from both services can be saved in one Google Sheet</li>
+                <li>Creates a Contents overview tab of what is included</li>
+                <li>Creates 4 sheets of data: Export, Definitions, Latest, Table view</li>
+                <li>Makes it easy to share with your doctor or favorite LLM</li>
+            </ul>
+        </div>
+
+        <div class="feature-section">
+            <h3>3. One-Click Export</h3>
+            <ul>
+                <li>Simple button appears on Function Health and Sutter Health pages</li>
+                <li>Automatic Google authentication</li>
+                <li>Progress tracking during export</li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>What Gets Added to Google Sheet</h2>
+        
+        <div class="feature-section">
+            <h3>Function Health export:</h3>
+            <ul>
+                <li><strong>FH_Values:</strong> All lab results with full history</li>
+                <li><strong>FH_Definitions:</strong> Biomarker definitions and reference ranges</li>
+                <li><strong>FH_Latest:</strong> Most recent value for each biomarker</li>
+                <li><strong>FH_Table:</strong> Pivot table view (biomarkers × dates)</li>
+                <li><strong>FH_Grouped:</strong> Results grouped by category</li>
+            </ul>
+        </div>
+
+        <div class="feature-section">
+            <h3>Sutter Health export:</h3>
+            <ul>
+                <li><strong>SH_Values:</strong> All lab results with full history</li>
+                <li><strong>SH_Definitions:</strong> Biomarker definitions and reference ranges</li>
+                <li><strong>SH_Latest:</strong> Most recent value for each biomarker</li>
+                <li><strong>SH_Table:</strong> Pivot table view (biomarkers × dates)</li>
+                <li><strong>SH_Grouped:</strong> Results grouped by category</li>
+            </ul>
+        </div>
+    </section>
 </body>
 </html>
