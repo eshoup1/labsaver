@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - LabSaver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #555;
+        }
+        .last-updated {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        .highlight {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+        }
+        ul {
+            margin: 10px 0;
+        }
+        li {
+            margin: 5px 0;
+        }
+        .summary {
+            background-color: #e8f5e9;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 30px 0;
+            border-left: 4px solid #4caf50;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back to Home</a>
+    
+    <h1>Privacy Policy for LabSaver - Health Data Exporter</h1>
+    
+    <p class="last-updated"><strong>Last Updated:</strong> January 17, 2025</p>
+
+    <h2>Overview</h2>
+    <p>LabSaver is committed to protecting your privacy. This privacy policy explains how our Chrome extension handles your health data.</p>
+
+    <h2>Data Collection</h2>
+    <div class="highlight">
+        <p><strong>We do not collect, store, or transmit any of your personal health information to our servers.</strong></p>
+    </div>
+
+    <h3>What Data the Extension Accesses</h3>
+    <p>The extension accesses:</p>
+    <ul>
+        <li>Lab results from Function Health and Sutter Health portals (only when you're logged in)</li>
+        <li>Your Google account information (email) for authentication</li>
+        <li>Your Google Sheets for data export</li>
+    </ul>
+
+    <h3>How Data is Processed</h3>
+    <p>All data processing happens <strong>locally in your browser</strong>:</p>
+    <ol>
+        <li>The extension reads lab results from health portals using your existing browser session</li>
+        <li>Data is processed and formatted entirely within your browser</li>
+        <li>Formatted data is written directly to your personal Google Sheet</li>
+    </ol>
+    <p><strong>No intermediate servers are involved.</strong> Data flows directly from the health portal to your Google Sheet.</p>
+
+    <h2>Data Storage</h2>
+
+    <h3>Local Storage</h3>
+    <p>The extension stores minimal data locally in your browser:</p>
+    <ul>
+        <li><code>masterSheetId</code>: The ID of your Google Sheet (to remember which sheet to use)</li>
+        <li><code>lastSheetName</code>: The last sheet name you used (for convenience)</li>
+    </ul>
+    <p>This data is stored using Chrome's <code>chrome.storage.local</code> API and never leaves your device.</p>
+
+    <h3>Google Sheets</h3>
+    <p>Your health data is stored in your personal Google Sheet, which you own and control. We have no access to this data.</p>
+
+    <h2>Third-Party Services</h2>
+
+    <h3>Google Sheets API</h3>
+    <ul>
+        <li>Used to write data to your personal Google Sheet</li>
+        <li>Requires OAuth 2.0 authentication</li>
+        <li>We only request the minimum necessary permissions:
+            <ul>
+                <li><code>https://www.googleapis.com/auth/spreadsheets</code> - To create and write to sheets</li>
+                <li><code>https://www.googleapis.com/auth/userinfo.email</code> - To identify your Google account</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>Health Portals</h3>
+    <ul>
+        <li>Function Health (my.functionhealth.com)</li>
+        <li>Sutter Health (myhealthonline.sutterhealth.org)</li>
+        <li>The extension uses your existing browser session cookies</li>
+        <li>No additional authentication is required</li>
+    </ul>
+
+    <h2>What We Do NOT Do</h2>
+    <ul>
+        <li>❌ We do not collect or store your health data</li>
+        <li>❌ We do not send data to any external servers (except Google Sheets, which you control)</li>
+        <li>❌ We do not track your usage or behavior</li>
+        <li>❌ We do not use analytics or telemetry</li>
+        <li>❌ We do not share data with third parties</li>
+        <li>❌ We do not sell your data</li>
+    </ul>
+
+    <h2>Permissions Explained</h2>
+    <p>The extension requires the following Chrome permissions:</p>
+
+    <h3>Required Permissions</h3>
+    <ul>
+        <li><strong>identity</strong>: To authenticate with Google for Sheets access</li>
+        <li><strong>storage</strong>: To remember your sheet ID and preferences locally</li>
+        <li><strong>scripting</strong>: To inject the export button into health portal pages</li>
+    </ul>
+
+    <h3>Host Permissions</h3>
+    <ul>
+        <li><strong>my.functionhealth.com</strong>: To read lab results from Function Health</li>
+        <li><strong>production-member-app-mid-lhuqotpy2a-ue.a.run.app</strong>: Function Health API endpoint</li>
+        <li><strong>myhealthonline.sutterhealth.org</strong>: To read lab results from Sutter Health</li>
+        <li><strong>sheets.googleapis.com</strong>: To write data to your Google Sheet</li>
+    </ul>
+
+    <h2>Open Source</h2>
+    <p>This extension is open source. You can review the complete source code to verify our privacy claims:</p>
+    <ul>
+        <li>GitHub Repository: <a href="https://github.com/eshoup1/labsaver" target="_blank">https://github.com/eshoup1/labsaver</a></li>
+    </ul>
+
+    <h2>Data Security</h2>
+    <ul>
+        <li>All data transmission uses HTTPS encryption</li>
+        <li>OAuth tokens are managed securely by Chrome</li>
+        <li>No data is stored on external servers</li>
+        <li>Your health data remains under your control</li>
+    </ul>
+
+    <h2>Children's Privacy</h2>
+    <p>This extension is not intended for use by children under 13 years of age. We do not knowingly collect information from children.</p>
+
+    <h2>Changes to This Policy</h2>
+    <p>We may update this privacy policy from time to time. We will notify users of any material changes by updating the "Last Updated" date.</p>
+
+    <h2>Contact</h2>
+    <p>For questions about this privacy policy or the extension's data practices, please:</p>
+    <ul>
+        <li>Open an issue on our <a href="https://github.com/eshoup1/labsaver" target="_blank">GitHub repository</a></li>
+    </ul>
+
+    <h2>Your Rights</h2>
+    <p>You have the right to:</p>
+    <ul>
+        <li>Access your data (it's in your Google Sheet)</li>
+        <li>Delete your data (delete your Google Sheet or uninstall the extension)</li>
+        <li>Export your data (it's already in Google Sheets format)</li>
+        <li>Revoke permissions (uninstall the extension or revoke Google OAuth access)</li>
+    </ul>
+
+    <h2>Compliance</h2>
+    <p>This extension complies with:</p>
+    <ul>
+        <li>Chrome Web Store Developer Program Policies</li>
+        <li>Google API Services User Data Policy</li>
+        <li>General Data Protection Regulation (GDPR) principles</li>
+        <li>California Consumer Privacy Act (CCPA) principles</li>
+    </ul>
+
+    <h2>Legal Basis for Processing (GDPR)</h2>
+    <p>We process your data based on:</p>
+    <ul>
+        <li><strong>Consent</strong>: You explicitly choose to use the extension and export your data</li>
+        <li><strong>Legitimate Interest</strong>: Processing is necessary to provide the service you requested</li>
+    </ul>
+
+    <h2>Data Retention</h2>
+    <ul>
+        <li>Local storage data: Retained until you uninstall the extension or clear browser data</li>
+        <li>Google Sheets data: Retained until you delete your sheet</li>
+        <li>We do not retain any data on our servers</li>
+    </ul>
+
+    <div class="summary">
+        <h3>Summary</h3>
+        <p><strong>LabSaver is a privacy-first extension.</strong> Your health data stays between you, your health portals, and your Google Sheet. We never see, store, or transmit your data through our servers.</p>
+    </div>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
+</body>
+</html>
