@@ -5,6 +5,26 @@ All notable changes to the LabSaver - Health Data Exporter extension will be doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.4] - 2024-11-26
+
+### Added
+- **Environment-Based Build System**: Introduced a Node.js-based build system ([`scripts/build.js`](scripts/build.js)) that supports `development` and `production` environments.
+- **Separate Dev/Prod OAuth Configurations**: Created `config/` directory to manage separate OAuth credentials for each environment, enhancing security.
+- **Automated Manifest Generation**: The build script now automatically generates `manifest.json` by merging a common config with an environment-specific one.
+- **Comprehensive Documentation**: Added new documentation for architecture, development, release process, and AI assistant guidance.
+
+### Changed
+- **Consolidated Codebase**: Merged the legacy `function-health-exporter` and `lab-result-exporter` directories into a single, unified project structure.
+- **Moved Source Files**: All extension source code is now located in the `src/` directory, creating a single source of truth.
+- **Replaced Build Script**: Replaced the old `package-extension.sh` script with the more robust `scripts/build.js`.
+
+### Fixed
+- **Version 2.0.3 Regression**: The new build system fundamentally fixes the regression issues from v2.0.3, where manual file management led to a broken extension. The automated process ensures all files from `src/` are included in every build.
+- **Build System ES Module Compatibility**: The build script is an ES module (`"type": "module"` in `package.json`), ensuring compatibility with modern Node.js features.
+
+### Security
+- **Production OAuth Credentials Excluded**: The `config/production.json` file, which holds the production OAuth client ID, is now listed in `.gitignore` and is never committed to the repository, protecting it from exposure.
+
 ## [2.0.2] - 2025-11-21
 
 ### Fixed
