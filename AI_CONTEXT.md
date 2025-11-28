@@ -27,6 +27,26 @@ Violating these rules can lead to broken builds, security vulnerabilities, or lo
 - **NEVER Mix Dev/Prod OAuth Credentials**: The build system is designed to handle this automatically. The development OAuth client ID is in [`config/development.json`](config/development.json), and the production ID is in the untracked `config/production.json`. Do not copy credentials between these files or hardcode them anywhere else.
   - **Development** ("Lab Saver" project): `699618980300-c7jn8t9kccdfm00c0704a29mduovqpe4.apps.googleusercontent.com`
   - **Production** ("LabSaver Production" project): `609855124330-qhqklvllcvmft7v8f9k42csfqupu1p6d.apps.googleusercontent.com`
+## 8. Known Issues and Workarounds
+
+### Development OAuth Client ID Configuration Issue
+
+**Issue**: The development OAuth client ID (`699618980300-c7jn8t9kccdfm00c0704a29mduovqpe4.apps.googleusercontent.com`) is experiencing configuration issues in Google Cloud Console, resulting in "bad client id" errors even after proper setup with the extension ID.
+
+**Workaround**: For testing purposes, use the production build which includes the production OAuth client ID (`609855124330-qhqklvllcvmft7v8f9k42csfqupu1p6d.apps.googleusercontent.com`). This client ID is known to work correctly.
+
+**Steps to Use Production Build for Testing**:
+1. Build the production version: `npm run build:prod`
+2. Load the unpacked extension from the `dist/` directory
+3. Note: The OAuth consent screen will show "LabSaver Production" instead of "Lab Saver"
+
+**Important Notes**:
+- This is a temporary workaround to unblock functionality testing
+- The production OAuth client ID is properly configured and functional
+- OAuth configuration changes in Google Cloud Console can take time to propagate
+- The development OAuth configuration should be revisited and fixed in the future
+- For now, focus on testing actual functionality (button behavior, alignment, tab sorting) using the production build
+
 
 ## 4. Directory Structure Rationale
 

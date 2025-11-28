@@ -3,156 +3,9 @@
  * Injects export button and handles data fetching from lab provider APIs
  */
 
-// Export state management
-let fhExportState = null; // { rowCount: number, sheetUrl: string }
-let shExportState = null; // { rowCount: number, sheetUrl: string }
-
 // Detect which site we're on
 const isFunctionHealth = window.location.hostname === "my.functionhealth.com";
 const isSutterHealth = window.location.hostname === "myhealthonline.sutterhealth.org";
-
-/**
- * Check if user is authenticated on Function Health
- * Returns true only if we can confirm user is actually logged in
- */
-function isUserAuthenticated() {
-  console.log('🔍 Starting authentication check...');
-  console.log('  Current URL:', window.location.href);
-  console.log('  Current pathname:', window.location.pathname);
-  
-  // Method 1: Check for authenticated user content FIRST
-  // Function Health shows specific elements only when logged in
-  const authenticatedIndicators = [
-    document.querySelector('[data-testid="user-menu"]'),
-    document.querySelector('[aria-label*="user menu" i]'),
-    document.querySelector('[class*="UserMenu"]'),
-    document.querySelector('button[aria-label*="account" i]'),
-    document.querySelector('nav[aria-label*="main" i]'),
-    document.querySelector('[data-testid="navigation"]'),
-    document.querySelector('a[href*="/labs"]'), // Labs link only shows when logged in
-    document.querySelector('a[href*="/results"]'), // Results link only shows when logged in
-  ];
-  
-  const hasAuthenticatedContent = authenticatedIndicators.some(el => el !== null);
-  if (hasAuthenticatedContent) {
-    console.log('✅ Found authenticated user interface elements - user is logged in');
-    return true;
-  }
-  
-  // Method 2: Check if we're specifically on the login page
-  // Only consider it a login page if we have BOTH the URL pattern AND login form elements
-  const isLoginURL = window.location.pathname === '/login' ||
-                     window.location.pathname === '/signin' ||
-                     window.location.pathname === '/auth/login';
-  
-  const hasLoginForm = document.querySelector('form[action*="login"]') !== null ||
-                      document.querySelector('input[name="email"][type="email"]') !== null ||
-                      (document.querySelector('input[type="password"]') !== null &&
-                       document.querySelector('button[type="submit"]') !== null &&
-                       document.title.toLowerCase().includes('log in'));
-  
-  if (isLoginURL || (hasLoginForm && document.querySelectorAll('input').length <= 5)) {
-    console.log('❌ On login page - user is logged out');
-    return false;
-  }
-  
-  // Method 3: Check for auth token in localStorage
-  const authKeys = [
-    'accessToken',
-    'access_token',
-    'authToken',
-    'auth_token',
-    'fh_token',
-    'functionhealth_token',
-    'jwt',
-    'id_token'
-  ];
-  
-  for (const key of authKeys) {
-    const value = localStorage.getItem(key);
-    if (value && value.length > 20) {
-      console.log(`✅ Found auth token in localStorage: ${key}`);
-      return true;
-    }
-  }
-  
-  // Method 4: Check for user data in localStorage
-  const userKeys = ['user', 'userData', 'currentUser', 'userInfo'];
-  for (const key of userKeys) {
-    const value = localStorage.getItem(key);
-    if (value && value.length > 10) {
-      try {
-        const parsed = JSON.parse(value);
-        if (parsed && (parsed.id || parsed.email || parsed.userId)) {
-          console.log(`✅ Found user data in localStorage: ${key}`);
-          return true;
-        }
-      } catch (e) {
-        // Not JSON, skip
-      }
-    }
-  }
-  
-  // Method 5: Check for specific auth cookies
-  const cookies = document.cookie;
-  const specificAuthPatterns = [
-    'auth_token=',
-    'access_token=',
-    'jwt=',
-    'fh_session=',
-    'functionhealth_session='
-  ];
-  
-  for (const pattern of specificAuthPatterns) {
-    if (cookies.includes(pattern)) {
-      console.log(`✅ Found specific auth cookie: ${pattern}`);
-      return true;
-    }
-  }
-  
-  console.log('❌ No authentication indicators found - user appears logged out');
-  return false;
-}
-
-/**
- * Update Function Health button state after export
- */
-function updateFHButtonState(exportButton, state) {
-  if (!state) return;
-  
-  fhExportState = state;
-  exportButton.textContent = `✓ Exported ${state.rowCount} results! Click to view →`;
-  exportButton.style.backgroundColor = '#10b981';
-  exportButton.style.cursor = 'pointer';
-  exportButton.style.whiteSpace = 'nowrap';
-  exportButton.style.padding = '10px 20px';
-  exportButton.style.width = 'auto';
-  exportButton.onclick = () => {
-    if (state.sheetUrl) {
-      window.open(state.sheetUrl, '_blank');
-    }
-  };
-}
-
-/**
- * Update Sutter Health button state after export
- */
-function updateSHButtonState(exportButton, state) {
-  if (!state) return;
-  
-  shExportState = state;
-  exportButton.textContent = `✓ Exported ${state.rowCount} results! Click to view →`;
-  exportButton.style.backgroundColor = '#10b981';
-  exportButton.style.cursor = 'pointer';
-  exportButton.style.whiteSpace = 'nowrap';
-  exportButton.style.padding = '10px 20px';
-  exportButton.style.width = 'auto';
-  exportButton.onclick = () => {
-    if (state.sheetUrl) {
-      window.open(state.sheetUrl, '_blank');
-    }
-  };
-}
 
 function injectFunctionHealthButton() {
   // Check if extension context is valid
@@ -163,17 +16,6 @@ function injectFunctionHealthButton() {
   
   // Prevent duplicate buttons
   if (document.getElementById("fh-export-btn")) return;
-
-  // Check if user is logged in
-  console.log('Checking authentication status...');
-  const isAuth = isUserAuthenticated();
-  console.log(`Authentication check result: ${isAuth}`);
-
-  if (!isAuth) {
-    console.log('User not logged in - skipping button injection');
-    return;
-  }
-  console.log('User is logged in - proceeding with button injection');
 
   // Create container for buttons
   const container = document.createElement("div");
@@ -336,17 +178,19 @@ function injectFunctionHealthButton() {
           btn.style.opacity = "1";
           
           if (response?.status === "ok") {
-            const sheetUrl = `https://docs.google.com/spreadsheets/d/${response.spreadsheetId}/edit`;
-            const state = {
-              rowCount: response.rowCount,
-              sheetUrl: sheetUrl
-            };
-            updateFHButtonState(btn, state);
+            textSpan.textContent = `✓ Exported ${response.rowCount} results!`;
+            btn.style.background = "#10b981";
           } else {
             textSpan.textContent = "Export Failed";
             btn.style.background = "#ef4444";
             console.error("Export error:", response?.message);
           }
+          
+          // Reset button after 3 seconds
+          setTimeout(() => {
+            textSpan.textContent = "Export Labs";
+            btn.style.background = "#1f2937";
+          }, 3000);
         }
       );
     } catch (e) {
@@ -409,20 +253,19 @@ function injectSutterHealthButton() {
   
   console.log("🔧 [DEBUG] Container created with ID:", container.id);
   
-  // Use comprehensive approach with !important flags to override Sutter Health's CSS
+  // Set positioning styles in specific order to avoid inset shorthand issues
   container.style.setProperty('position', 'fixed', 'important');
-  container.style.setProperty('top', '20px', 'important');
-  container.style.setProperty('right', '20px', 'important');
-  container.style.setProperty('left', 'auto', 'important');
-  container.style.setProperty('transform', 'translateX(0)', 'important');
-  container.style.setProperty('margin-left', 'auto', 'important');
-  container.style.setProperty('width', 'fit-content', 'important');
   container.style.setProperty('z-index', '99999', 'important');
   container.style.setProperty('display', 'flex', 'important');
   container.style.setProperty('flex-direction', 'column', 'important');
   container.style.setProperty('gap', '10px', 'important');
   
-  console.log("🔧 [DEBUG] Container styles applied via Object.assign");
+  // Set positioning properties - use right instead of left with calc()
+  container.style.setProperty('left', 'auto', 'important');
+  container.style.setProperty('top', '20px', 'important');
+  container.style.setProperty('right', '20px', 'important');
+  
+  console.log("🔧 [DEBUG] Container styles applied via setProperty");
 
   // Create Export button
   const btn = document.createElement("button");
@@ -463,6 +306,7 @@ function injectSutterHealthButton() {
     justify-content: center !important;
     white-space: nowrap !important;
     width: auto !important;
+    max-width: 200px !important;
     flex-shrink: 0 !important;
   `);
 
@@ -613,17 +457,19 @@ function injectSutterHealthButton() {
           btn.style.opacity = "1";
           
           if (response?.status === "ok") {
-            const sheetUrl = `https://docs.google.com/spreadsheets/d/${response.spreadsheetId}/edit`;
-            const state = {
-              rowCount: response.rowCount,
-              sheetUrl: sheetUrl
-            };
-            updateSHButtonState(btn, state);
+            textSpan.textContent = `✓ Exported ${response.rowCount} results!`;
+            btn.style.background = "#10b981";
           } else {
             textSpan.textContent = "Export Failed";
             btn.style.background = "#ef4444";
             console.error("Export error:", response?.message);
           }
+          
+          // Reset button after 3 seconds
+          setTimeout(() => {
+            textSpan.textContent = "Export Labs";
+            btn.style.background = "#1f2937";
+          }, 3000);
         }
       );
     } catch (e) {
@@ -644,7 +490,65 @@ function injectSutterHealthButton() {
 
   // Add button to container and container to page
   container.appendChild(btn);
-  document.body.appendChild(container);
+  console.log("🔧 [DEBUG] Button added to container");
+  
+  // Verify body exists before appending
+  if (!document.body) {
+    console.error("🔧 [DEBUG] ERROR: document.body is null!");
+    return;
+  }
+  
+  document.documentElement.appendChild(container);
+  console.log("🔧 [DEBUG] Container appended to document.documentElement");
+  
+  // Watch for style changes and aggressively re-enforce positioning
+  const observer = new MutationObserver(() => {
+    container.style.removeProperty('bottom');
+    // Re-apply positioning with left: auto and right
+    container.style.setProperty('left', 'auto', 'important');
+    container.style.setProperty('top', '20px', 'important');
+    container.style.setProperty('right', '20px', 'important');
+  });
+  observer.observe(container, { attributes: true, attributeFilter: ['style'], childList: false, subtree: false });
+  console.log("🔧 [DEBUG] MutationObserver attached to watch for style changes");
+  
+  // Immediately force correct positioning
+  container.style.removeProperty('bottom');
+  container.style.setProperty('left', 'auto', 'important');
+  container.style.setProperty('top', '20px', 'important');
+  container.style.setProperty('right', '20px', 'important');
+
+  // Use setInterval as backup since CSS rules don't trigger MutationObserver
+  setInterval(() => {
+    const computed = window.getComputedStyle(container);
+    const expectedRight = 20;
+    const actualRight = parseInt(computed.right);
+    // Re-apply if right position is wrong (allow 5px tolerance)
+    if (Math.abs(actualRight - expectedRight) > 5) {
+      container.style.removeProperty('bottom');
+      container.style.setProperty('left', 'auto', 'important');
+      container.style.setProperty('top', '20px', 'important');
+      container.style.setProperty('right', '20px', 'important');
+    }
+  }, 100); // Check every 100ms
+  
+  // Verify the container is in the DOM and check its computed styles
+  setTimeout(() => {
+    const insertedContainer = document.getElementById("sh-export-container");
+    if (insertedContainer) {
+      const computedStyles = window.getComputedStyle(insertedContainer);
+      console.log("🔧 [DEBUG] Container found in DOM");
+      console.log("🔧 [DEBUG] Computed position:", computedStyles.position);
+      console.log("🔧 [DEBUG] Computed top:", computedStyles.top);
+      console.log("🔧 [DEBUG] Computed right:", computedStyles.right);
+      console.log("🔧 [DEBUG] Computed left:", computedStyles.left);
+      console.log("🔧 [DEBUG] Computed z-index:", computedStyles.zIndex);
+      console.log("🔧 [DEBUG] Inline styles:", insertedContainer.style.cssText);
+    } else {
+      console.error("🔧 [DEBUG] ERROR: Container not found in DOM after insertion!");
+    }
+  }, 100);
+  
   console.log("✅ Sutter Health Export button injected");
 }
 
@@ -870,45 +774,6 @@ function flattenOrderDetailsToRows(orderSummary, detailJson) {
   return rows;
 }
 
-/**
- * Setup navigation detection for Function Health SPA
- * Detects URL changes and re-injects button after login
- */
-function setupNavigationDetection() {
-  if (!isFunctionHealth) return;
-  
-  let lastUrl = window.location.href;
-  console.log('🔍 Setting up navigation detection for Function Health SPA');
-  
-  // Check for URL changes every 500ms
-  const urlCheckInterval = setInterval(() => {
-    const currentUrl = window.location.href;
-    
-    if (currentUrl !== lastUrl) {
-      console.log('🔄 URL changed from', lastUrl, 'to', currentUrl);
-      lastUrl = currentUrl;
-      
-      // Wait a moment for the page to render, then check auth and inject button
-      setTimeout(() => {
-        console.log('🔍 Re-checking authentication after navigation...');
-        injectFunctionHealthButton();
-      }, 1000);
-    }
-  }, 500);
-  
-  // Also listen for popstate events (back/forward navigation)
-  window.addEventListener('popstate', () => {
-    console.log('🔄 Popstate event detected');
-    setTimeout(() => {
-      console.log('🔍 Re-checking authentication after popstate...');
-      injectFunctionHealthButton();
-    }, 1000);
-  });
-  
-  // Store interval ID for potential cleanup
-  window.__fhNavDetectionInterval = urlCheckInterval;
-}
-
 // Wait for page load and inject appropriate button
 console.log("🔧 [DEBUG] Content script loaded");
 console.log("🔧 [DEBUG] isFunctionHealth:", isFunctionHealth);
@@ -923,8 +788,6 @@ if (document.readyState === "loading") {
       if (isFunctionHealth) {
         console.log("🔧 [DEBUG] Calling injectFunctionHealthButton()");
         injectFunctionHealthButton();
-        // Setup navigation detection for SPA
-        setupNavigationDetection();
       } else if (isSutterHealth) {
         console.log("🔧 [DEBUG] Calling injectSutterHealthButton()");
         injectSutterHealthButton();
@@ -937,8 +800,6 @@ if (document.readyState === "loading") {
     if (isFunctionHealth) {
       console.log("🔧 [DEBUG] Calling injectFunctionHealthButton()");
       injectFunctionHealthButton();
-      // Setup navigation detection for SPA
-      setupNavigationDetection();
     } else if (isSutterHealth) {
       console.log("🔧 [DEBUG] Calling injectSutterHealthButton()");
       injectSutterHealthButton();

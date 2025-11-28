@@ -1483,24 +1483,9 @@ async function createOrUpdateContentsTab(token, spreadsheetId, tabsMetadata) {
       });
     }
     
-    // Step 3: Sort tabs in custom order: Export, Definitions, Latest, Table, then alphabetically
-    const customOrder = ['FH_Export', 'FH_Definitions', 'FH_Latest', 'FH_Table', 'SH_Export'];
-    const sortedTabNames = Array.from(existingTabs.keys()).sort((a, b) => {
-      const aIndex = customOrder.indexOf(a);
-      const bIndex = customOrder.indexOf(b);
-      
-      // If both are in custom order, sort by their position
-      if (aIndex !== -1 && bIndex !== -1) {
-        return aIndex - bIndex;
-      }
-      // If only a is in custom order, it comes first
-      if (aIndex !== -1) return -1;
-      // If only b is in custom order, it comes first
-      if (bIndex !== -1) return 1;
-      // Otherwise, sort alphabetically
-      return a.localeCompare(b);
-    });
-    console.log(`  - Total tabs after custom sort: ${sortedTabNames.length}`);
+    // Step 3: Sort tabs alphabetically by name
+    const sortedTabNames = Array.from(existingTabs.keys()).sort();
+    console.log(`  - Total tabs after merge: ${sortedTabNames.length}`);
     
     // Step 4: Get sheet metadata to retrieve sheet IDs (gid) for hyperlinks
     const metadataResponse = await fetch(
@@ -2199,8 +2184,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({
           status: "ok",
           rowCount: rows.length,
-          spreadsheetId: spreadsheetId,
-          sheetUrl: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`,
           definitionsCount: definitionsRows.length - 1,
           latestValuesCount: latestValuesRows.length - 1,
           tableStats: tableStats
@@ -2234,8 +2217,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({
           status: "ok",
           rowCount: result.rowCount,
-          spreadsheetId: result.spreadsheetId,
-          sheetUrl: `https://docs.google.com/spreadsheets/d/${result.spreadsheetId}/edit`
+          spreadsheetId: result.spreadsheetId
         });
       } catch (err) {
         console.log("\n" + "=".repeat(60));

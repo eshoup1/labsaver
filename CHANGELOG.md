@@ -5,6 +5,36 @@ All notable changes to the LabSaver - Health Data Exporter extension will be doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.5] - 2024-01-27
+
+### Fixed
+- Added automatic button injection after login on Function Health without requiring page refresh
+- Implemented SPA navigation detection to handle client-side routing
+- Button now appears automatically when navigating from login page to authenticated pages
+
+### Technical
+- Added `setupNavigationDetection()` function with URL polling and popstate listener
+- Detects URL changes every 500ms and re-runs authentication check
+- Prevents duplicate button injection with existing ID check
+
+## [2.0.5] - 2024-11-26
+
+### Fixed (Critical)
+- Added authentication check to prevent button showing when user not logged in
+- Added export state management so button remembers export and can reopen sheet
+- Added sheet URL to export responses for proper button click handling
+
+### Fixed
+- Contents tab now uses custom sort order (Export, Definitions, Latest, Table) instead of alphabetical
+- Export button now stays green and clickable after successful export, opening the Google Sheet when clicked
+- Button no longer resets after 3 seconds
+- Sutter Health Export Labs button now correctly right-aligned (matching Function Health)
+
+### Changed
+- Improved button UX: successful export button becomes a direct link to the exported spreadsheet
+- Tab sorting in Contents now follows logical order: Export → Definitions → Latest → Table
+- Simplified Sutter Health button positioning code to match Function Health approach
+
 ## [2.0.4] - 2024-11-26
 
 ### Added
