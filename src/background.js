@@ -1,5 +1,5 @@
-// 🚀 LabSaver v2.0 - UPDATED CODE LOADED
-console.log("🚀 LabSaver v2.0 - Multi-Provider Lab Exporter");
+// 🚀 LabSaver v2.2.3 - UPDATED CODE LOADED
+console.log("🚀 LabSaver v2.2.3 - Multi-Provider Lab Exporter");
 
 /**
  * LabSaver - Background Service Worker
@@ -82,12 +82,13 @@ function getAuthToken(interactive = true) {
 }
 
 /**
- * Get spreadsheet ID from storage or use default
+ * Get spreadsheet ID from storage
+ * Returns null if not set - user must select via picker
  */
 function getSpreadsheetId() {
   return new Promise((resolve) => {
     chrome.storage.sync.get(["spreadsheetId"], (result) => {
-      resolve(result.spreadsheetId || DEFAULT_SHEET_ID);
+      resolve(result.spreadsheetId || null);
     });
   });
 }
@@ -328,12 +329,16 @@ async function processSutterHealthExport(rows, sheetName = 'Lab Results') {
   console.log(`Sheet Name: ${sheetName}`);
   console.log(`Received ${rows.length} component results from content script`);
   
-  // Get or create spreadsheet
+  // Check if spreadsheet ID is set
+  const spreadsheetId = await getSpreadsheetId();
+  if (!spreadsheetId) {
+    console.log("❌ No spreadsheet selected - user must use picker");
+    throw new Error('No spreadsheet selected. Please select a spreadsheet first.');
+  }
+  
   console.log("\n--- Writing to Google Sheets ---");
   const token = await getAuthToken(true);
-  
-  // Use getOrCreateSpreadsheet with the provided sheet name
-  const spreadsheetId = await getOrCreateSpreadsheet(sheetName);
+  console.log(`✓ Using spreadsheet: ${spreadsheetId}`);
   
   // Ensure SH_Export sheet exists
   await ensureSheetExists(token, spreadsheetId, "SH_Export");
@@ -1736,11 +1741,15 @@ async function syncSheetWithData(rows, sheetName = 'Lab Results') {
   console.log("=== syncSheetWithData START ===");
   console.log(`Processing ${rows.length} rows`);
   
+  // Check if spreadsheet ID is set
+  const spreadsheetId = await getSpreadsheetId();
+  if (!spreadsheetId) {
+    console.log("❌ No spreadsheet selected - user must use picker");
+    throw new Error('No spreadsheet selected. Please select a spreadsheet first.');
+  }
+  
   const token = await getAuthToken(true);
   console.log("✓ Auth token obtained");
-  
-  // Get or create spreadsheet with the custom name
-  const spreadsheetId = await getOrCreateSpreadsheet(sheetName);
   console.log(`✓ Using spreadsheet: ${spreadsheetId}`);
   console.log(`   Sheet name: "${sheetName}"`);
   console.log(`   View at: https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`);
@@ -2069,6 +2078,20 @@ async function createTableSheet(rows) {
  * Handle messages from content script
  */
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // Handle OAuth token request from content script
+  if (msg.type === "GET_AUTH_TOKEN") {
+    (async () => {
+      try {
+        const token = await getAuthToken(true); // interactive = true
+        sendResponse({ success: true, token: token });
+      } catch (err) {
+        console.error("Error getting auth token:", err);
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
+    return true; // Indicates async response
+  }
+  
   // Handle storage get request
   if (msg.type === "GET_STORAGE") {
     chrome.storage.sync.get(msg.keys, (result) => {

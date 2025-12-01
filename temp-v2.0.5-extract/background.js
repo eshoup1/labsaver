@@ -82,22 +82,14 @@ function getAuthToken(interactive = true) {
 }
 
 /**
- * Get spreadsheet ID from storage (returns null if not set)
+ * Get spreadsheet ID from storage
+ * Returns null if not set - user must select via picker
  */
 function getSpreadsheetId() {
   return new Promise((resolve) => {
     chrome.storage.sync.get(["spreadsheetId"], (result) => {
       resolve(result.spreadsheetId || null);
     });
-  });
-}
-
-/**
- * Store spreadsheet ID in storage
- */
-function storeSpreadsheetId(spreadsheetId) {
-  return new Promise((resolve) => {
-    chrome.storage.sync.set({ spreadsheetId }, resolve);
   });
 }
 
@@ -280,16 +272,16 @@ async function processSutterHealthExport(rows, sheetName = 'Lab Results') {
   console.log(`Sheet Name: ${sheetName}`);
   console.log(`Received ${rows.length} component results from content script`);
   
-  // Get spreadsheet ID from storage
+  // Check if spreadsheet ID is set
+  const spreadsheetId = await getSpreadsheetId();
+  if (!spreadsheetId) {
+    console.log("❌ No spreadsheet selected - user must use picker");
+    throw new Error('picker_required');
+  }
+  
   console.log("\n--- Writing to Google Sheets ---");
   const token = await getAuthToken(true);
-  
-  // Get stored spreadsheet ID
-  const spreadsheetId = await getSpreadsheetId();
-  
-  if (!spreadsheetId) {
-    throw new Error('PICKER_REQUIRED');
-  }
+  console.log(`✓ Using spreadsheet: ${spreadsheetId}`);
   
   // Ensure SH_Export sheet exists
   await ensureSheetExists(token, spreadsheetId, "SH_Export");
@@ -1439,9 +1431,24 @@ async function createOrUpdateContentsTab(token, spreadsheetId, tabsMetadata) {
       });
     }
     
-    // Step 3: Sort tabs alphabetically by name
-    const sortedTabNames = Array.from(existingTabs.keys()).sort();
-    console.log(`  - Total tabs after merge: ${sortedTabNames.length}`);
+    // Step 3: Sort tabs in custom order: Export, Definitions, Latest, Table, then alphabetically
+    const customOrder = ['FH_Export', 'FH_Definitions', 'FH_Latest', 'FH_Table', 'SH_Export'];
+    const sortedTabNames = Array.from(existingTabs.keys()).sort((a, b) => {
+      const aIndex = customOrder.indexOf(a);
+      const bIndex = customOrder.indexOf(b);
+      
+      // If both are in custom order, sort by their position
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+      // If only a is in custom order, it comes first
+      if (aIndex !== -1) return -1;
+      // If only b is in custom order, it comes first
+      if (bIndex !== -1) return 1;
+      // Otherwise, sort alphabetically
+      return a.localeCompare(b);
+    });
+    console.log(`  - Total tabs after custom sort: ${sortedTabNames.length}`);
     
     // Step 4: Get sheet metadata to retrieve sheet IDs (gid) for hyperlinks
     const metadataResponse = await fetch(
@@ -1677,19 +1684,23 @@ async function syncSheetWithData(rows, sheetName = 'Lab Results') {
   console.log("=== syncSheetWithData START ===");
   console.log(`Processing ${rows.length} rows`);
   
-  const token = await getAuthToken(true);
-  console.log("✓ Auth token obtained");
-  
-  // Get stored spreadsheet ID
+  // Check if spreadsheet ID is set
   const spreadsheetId = await getSpreadsheetId();
-  
   if (!spreadsheetId) {
-    throw new Error('PICKER_REQUIRED');
+    console.log("❌ No spreadsheet selected - user must use picker");
+    throw new Error('picker_required');
   }
   
+  const token = await getAuthToken(true);
+  console.log("✓ Auth token obtained");
   console.log(`✓ Using spreadsheet: ${spreadsheetId}`);
   console.log(`   Sheet name: "${sheetName}"`);
   console.log(`   View at: https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`);
+
+  // Store spreadsheetId for other functions to use
+  await new Promise((resolve) => {
+    chrome.storage.sync.set({ spreadsheetId }, resolve);
+  });
 
   // Ensure FH_Export sheet exists and write data
   await ensureSheetExists(token, spreadsheetId, "FH_Export");
@@ -2010,21 +2021,6 @@ async function createTableSheet(rows) {
  * Handle messages from content script
  */
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  // Handle picker selection
-  if (msg.type === "SPREADSHEET_SELECTED") {
-    console.log(`✓ Spreadsheet selected: ${msg.spreadsheetId}`);
-    console.log(`  Name: ${msg.spreadsheetName}`);
-    sendResponse({ success: true });
-    return true;
-  }
-  
-  // Handle picker cancellation
-  if (msg.type === "PICKER_CANCELLED") {
-    console.log("ℹ User cancelled spreadsheet selection");
-    sendResponse({ success: true });
-    return true;
-  }
-  
   // Handle storage get request
   if (msg.type === "GET_STORAGE") {
     chrome.storage.sync.get(msg.keys, (result) => {
@@ -2171,9 +2167,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         console.error("Error stack:", err.stack);
         console.error("=".repeat(60) + "\n");
         
-        // Check if error is due to missing spreadsheet ID
-        if (err.message === 'PICKER_REQUIRED') {
-          sendResponse({ status: "picker_required", message: "Please select a spreadsheet" });
+        // Check if error is picker_required
+        if (err.message === 'picker_required') {
+          sendResponse({ status: "error", message: "picker_required" });
         } else {
           sendResponse({ status: "error", message: String(err) });
         }
@@ -2208,9 +2204,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         console.error("Error stack:", err.stack);
         console.error("=".repeat(60) + "\n");
         
-        // Check if error is due to missing spreadsheet ID
-        if (err.message === 'PICKER_REQUIRED') {
-          sendResponse({ status: "picker_required", message: "Please select a spreadsheet" });
+        // Check if error is picker_required
+        if (err.message === 'picker_required') {
+          sendResponse({ status: "error", message: "picker_required" });
         } else {
           sendResponse({ status: "error", message: String(err) });
         }

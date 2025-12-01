@@ -285,15 +285,62 @@ function injectFunctionHealthButton() {
         throw new Error('Extension context invalidated - please reload the page');
       }
 
-      // Always show the choice modal - let user decide where to export
-      console.log("Showing export choice modal...");
-      showExportChoiceModal(data, 'Lab Results', "FH");
-      
-      // Reset button state
-      btn.disabled = false;
-      btn.style.cursor = "pointer";
-      btn.style.opacity = "1";
-      textSpan.textContent = "Export Labs";
+      // Send data to background script for processing
+      chrome.runtime.sendMessage(
+        { type: "FH_EXPORT_DATA", payload: data, sheetName: 'Lab Results' },
+        async (response) => {
+          // Check if spreadsheet ID is not set - show naming modal for first-time setup
+          if (response?.status === "error" && response?.message?.includes('spreadsheet')) {
+            console.log("No spreadsheet configured - showing naming modal for first-time setup...");
+            
+            // Show naming modal for first-time setup
+            showNamingModal(data, 'Lab Results', "FH");
+            
+            // Reset button state
+            btn.disabled = false;
+            btn.style.cursor = "pointer";
+            btn.style.opacity = "1";
+            textSpan.textContent = "Export Labs";
+            return;
+          }
+          
+          // Check if spreadsheet was deleted/invalid - clear and show naming modal
+          if (response?.status === "error" && (response?.message?.includes('404') || response?.message?.includes('not found') || response?.message?.includes('deleted'))) {
+            console.log("Spreadsheet no longer exists - clearing saved ID and showing naming modal...");
+            
+            // Clear the invalid spreadsheet ID
+            chrome.storage.sync.remove('spreadsheetId', () => {
+              // Show naming modal to create a new one
+              showNamingModal(data, 'Lab Results', "FH");
+            });
+            
+            // Reset button state
+            btn.disabled = false;
+            btn.style.cursor = "pointer";
+            btn.style.opacity = "1";
+            textSpan.textContent = "Export Labs";
+            return;
+          }
+          
+          // Handle successful export
+          btn.disabled = false;
+          btn.style.cursor = "pointer";
+          btn.style.opacity = "1";
+          
+          if (response?.status === "ok") {
+            const sheetUrl = `https://docs.google.com/spreadsheets/d/${response.spreadsheetId}/edit`;
+            const state = {
+              rowCount: response.rowCount,
+              sheetUrl: sheetUrl
+            };
+            updateFHButtonState(btn, state);
+          } else {
+            textSpan.textContent = "Export Failed";
+            btn.style.background = "#ef4444";
+            console.error("Export error:", response?.message);
+          }
+        }
+      );
     } catch (e) {
       console.error("Export error:", e);
       alert(e.message || 'Export failed - please try again');
@@ -503,15 +550,66 @@ function injectSutterHealthButton() {
         throw new Error('Extension context invalidated - please reload the page');
       }
 
-      // Always show the choice modal - let user decide where to export
-      console.log("Showing export choice modal...");
-      showExportChoiceModal(allRows, 'Lab Results', "SH");
-      
-      // Reset button state
-      btn.disabled = false;
-      btn.style.cursor = "pointer";
-      btn.style.opacity = "1";
-      textSpan.textContent = "Export Labs";
+      // Send flattened rows to background script for Google Sheets writing
+      chrome.runtime.sendMessage(
+        {
+          type: "SH_EXPORT_ROWS",
+          payload: { rows: allRows },
+          sheetName: 'Lab Results'
+        },
+        async (response) => {
+          // Check if spreadsheet ID is not set - show naming modal for first-time setup
+          if (response?.status === "error" && response?.message?.includes('spreadsheet')) {
+            console.log("No spreadsheet configured - showing naming modal for first-time setup...");
+            
+            // Show naming modal for first-time setup
+            showNamingModal(allRows, 'Lab Results', "SH");
+            
+            // Reset button state
+            btn.disabled = false;
+            btn.style.cursor = "pointer";
+            btn.style.opacity = "1";
+            textSpan.textContent = "Export Labs";
+            return;
+          }
+          
+          // Check if spreadsheet was deleted/invalid - clear and show naming modal
+          if (response?.status === "error" && (response?.message?.includes('404') || response?.message?.includes('not found') || response?.message?.includes('deleted'))) {
+            console.log("Spreadsheet no longer exists - clearing saved ID and showing naming modal...");
+            
+            // Clear the invalid spreadsheet ID
+            chrome.storage.sync.remove('spreadsheetId', () => {
+              // Show naming modal to create a new one
+              showNamingModal(allRows, 'Lab Results', "SH");
+            });
+            
+            // Reset button state
+            btn.disabled = false;
+            btn.style.cursor = "pointer";
+            btn.style.opacity = "1";
+            textSpan.textContent = "Export Labs";
+            return;
+          }
+          
+          // Handle successful export
+          btn.disabled = false;
+          btn.style.cursor = "pointer";
+          btn.style.opacity = "1";
+          
+          if (response?.status === "ok") {
+            const sheetUrl = `https://docs.google.com/spreadsheets/d/${response.spreadsheetId}/edit`;
+            const state = {
+              rowCount: response.rowCount,
+              sheetUrl: sheetUrl
+            };
+            updateSHButtonState(btn, state);
+          } else {
+            textSpan.textContent = "Export Failed";
+            btn.style.background = "#ef4444";
+            console.error("Export error:", response?.message);
+          }
+        }
+      );
     } catch (e) {
       console.error("Export error:", e);
       alert(e.message || 'Export failed - please try again');
@@ -758,7 +856,7 @@ function flattenOrderDetailsToRows(orderSummary, detailJson) {
 
 /**
  * -----------------------------------------------------------------
- * EXPORT CHOICE MODAL IMPLEMENTATION
+ * FIRST-TIME SETUP MODAL IMPLEMENTATION
  * -----------------------------------------------------------------
  */
 
@@ -766,190 +864,83 @@ let setupState = {
   oauthToken: null,
   exportData: null,
   sheetName: null,
-  exportType: null, // 'FH' or 'SH'
-  existingSpreadsheetId: null,
-  existingSpreadsheetName: null
+  exportType: null // 'FH' or 'SH'
 };
 
 /**
- * Show the choice modal - always shown on export, not just first time.
- * Allows user to choose between existing spreadsheet or creating new one.
+ * Show the naming modal for first-time setup.
  */
-function showExportChoiceModal(exportData, sheetName, exportType) {
+function showNamingModal(exportData, sheetName, exportType) {
   setupState.exportData = exportData;
   setupState.sheetName = sheetName;
   setupState.exportType = exportType;
 
-  // Get existing spreadsheet info
-  chrome.storage.sync.get(['spreadsheetId', 'spreadsheetName'], (result) => {
-    setupState.existingSpreadsheetId = result.spreadsheetId || null;
-    setupState.existingSpreadsheetName = result.spreadsheetName || null;
-
-    // Create and inject the modal UI
-    createExportChoiceModalUI();
-  });
+  // Create and inject the modal UI
+  createNamingModalUI();
 }
 
 /**
- * Create and inject the export choice modal overlay and content.
- * Shows radio buttons to choose between existing or new spreadsheet.
+ * Create and inject the naming modal overlay and content.
  */
-function createExportChoiceModalUI() {
+function createNamingModalUI() {
   // Remove existing modal if any
-  const existingModal = document.getElementById('labsaver-export-modal');
+  const existingModal = document.getElementById('labsaver-naming-modal');
   if (existingModal) {
     existingModal.remove();
   }
 
-  const hasExisting = setupState.existingSpreadsheetId && setupState.existingSpreadsheetName;
-  const displayName = setupState.existingSpreadsheetName || 'My Lab Results';
-
   const modal = document.createElement('div');
-  modal.id = 'labsaver-export-modal';
+  modal.id = 'labsaver-naming-modal';
   modal.style.cssText = `
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.6); z-index: 10000; display: flex;
     align-items: center; justify-content: center;
   `;
 
-  // Build the modal content based on whether there's an existing spreadsheet
-  const iconUrl = chrome.runtime.getURL('icons/icon48.png');
-  let modalContent = `
+  modal.innerHTML = `
     <div style="background: white; width: 90%; max-width: 500px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); font-family: system-ui, sans-serif; display: flex; flex-direction: column;">
       <div style="padding: 24px; border-bottom: 1px solid #e5e7eb;">
-        <h2 style="margin: 0 0 8px 0; font-size: 22px; color: #1f2937; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-          <img src="${iconUrl}" style="width: 24px; height: 24px;" alt="LabSaver">
-          Export Labs
-        </h2>
-        <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Choose where to export your data:</p>
+        <h2 style="margin: 0 0 8px 0; font-size: 22px; color: #1f2937; font-weight: 600;">Welcome to LabSaver! 🎉</h2>
+        <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.5;">What would you like to name your lab results spreadsheet?</p>
       </div>
       <div style="padding: 24px;">
-  `;
-
-  if (hasExisting) {
-    // Show both options when there's an existing spreadsheet
-    modalContent += `
-        <label style="display: flex; align-items: flex-start; padding: 16px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; margin: 0 0 12px 0; transition: all 0.2s; width: 100%; box-sizing: border-box;" id="use-existing-option">
-          <input type="radio" name="export-choice" value="existing" checked style="margin-top: 2px; margin-right: 12px; width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
-          <div style="flex: 1;">
-            <div style="font-weight: 600; color: #1f2937; font-size: 15px; margin-bottom: 4px;">Use existing spreadsheet</div>
-            <div style="color: #6b7280; font-size: 14px;">"${displayName}"</div>
-          </div>
-        </label>
-        
-        <label style="display: flex; align-items: flex-start; padding: 16px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; margin: 0; transition: all 0.2s; width: 100%; box-sizing: border-box;" id="create-new-option">
-          <input type="radio" name="export-choice" value="new" style="margin-top: 2px; margin-right: 12px; width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
-          <div style="flex: 1;">
-            <div style="font-weight: 600; color: #1f2937; font-size: 15px; margin-bottom: 8px;">Create new spreadsheet</div>
-            <input
-              type="text"
-              id="new-spreadsheet-name"
-              value="My Lab Results"
-              placeholder="Enter name..."
-              disabled
-              style="width: 100%; padding: 8px 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px; font-family: system-ui, sans-serif; box-sizing: border-box; transition: border-color 0.2s; background: #f9fafb;"
-            />
-          </div>
-        </label>
-    `;
-  } else {
-    // First time - only show create new option (simplified without green background)
-    modalContent += `
-        <div style="margin-bottom: 12px;">
-          <input
-            type="text"
-            id="new-spreadsheet-name"
-            value="My Lab Results"
-            placeholder="Enter spreadsheet name..."
-            style="width: 100%; padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px; font-family: system-ui, sans-serif; box-sizing: border-box; transition: border-color 0.2s;"
-          />
-        </div>
-    `;
-  }
-
-  modalContent += `
-        <div id="export-status" style="margin-top: 12px; padding: 10px; border-radius: 6px; display: none;"></div>
+        <label style="display: block; margin-bottom: 8px; color: #374151; font-size: 14px; font-weight: 500;">Spreadsheet Name</label>
+        <input
+          type="text"
+          id="spreadsheet-name-input"
+          value="My Lab Results"
+          placeholder="Enter spreadsheet name"
+          style="width: 100%; padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px; font-family: system-ui, sans-serif; box-sizing: border-box; transition: border-color 0.2s;"
+        />
+        <div id="naming-status" style="margin-top: 12px; padding: 10px; border-radius: 6px; display: none;"></div>
       </div>
       <div style="padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; justify-content: flex-end;">
-        <button id="export-cancel-btn" style="background: #f3f4f6; color: #374151; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.2s;">Cancel</button>
-        <button id="export-confirm-btn" style="background: #374151; color: white; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.2s;">Export</button>
+        <button id="naming-cancel-btn" style="background: #f3f4f6; color: #374151; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.2s;">Cancel</button>
+        <button id="naming-create-btn" style="background: #10b981; color: white; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.2s;">Create Spreadsheet</button>
       </div>
     </div>
   `;
 
-  modal.innerHTML = modalContent;
   document.body.appendChild(modal);
 
   // Get elements
-  const newNameInput = modal.querySelector('#new-spreadsheet-name');
-  const confirmBtn = modal.querySelector('#export-confirm-btn');
-  const cancelBtn = modal.querySelector('#export-cancel-btn');
-  const useExistingOption = modal.querySelector('#use-existing-option');
-  const createNewOption = modal.querySelector('#create-new-option');
-  const existingRadio = modal.querySelector('input[value="existing"]');
-  const newRadio = modal.querySelector('input[value="new"]');
+  const input = modal.querySelector('#spreadsheet-name-input');
+  const createBtn = modal.querySelector('#naming-create-btn');
+  const cancelBtn = modal.querySelector('#naming-cancel-btn');
 
-  // Setup radio button interactions (only if both options exist)
-  if (hasExisting && existingRadio && newRadio) {
-    const updateSelection = () => {
-      if (existingRadio.checked) {
-        useExistingOption.style.borderColor = '#10b981';
-        useExistingOption.style.background = 'white';
-        createNewOption.style.borderColor = '#e5e7eb';
-        createNewOption.style.background = 'white';
-        newNameInput.disabled = true;
-        newNameInput.style.background = '#f9fafb';
-        newNameInput.style.borderColor = '#e5e7eb';
-      } else {
-        useExistingOption.style.borderColor = '#e5e7eb';
-        useExistingOption.style.background = 'white';
-        createNewOption.style.borderColor = '#10b981';
-        createNewOption.style.background = 'white';
-        newNameInput.disabled = false;
-        newNameInput.style.background = 'white';
-        newNameInput.style.borderColor = '#10b981';
-        setTimeout(() => {
-          newNameInput.focus();
-          newNameInput.select();
-        }, 100);
-      }
-    };
-
-    existingRadio.addEventListener('change', updateSelection);
-    newRadio.addEventListener('change', updateSelection);
-    
-    // Make the entire label clickable
-    useExistingOption.addEventListener('click', (e) => {
-      if (e.target !== existingRadio) {
-        existingRadio.checked = true;
-        updateSelection();
-      }
-    });
-    
-    createNewOption.addEventListener('click', (e) => {
-      if (e.target !== newRadio && e.target !== newNameInput) {
-        newRadio.checked = true;
-        updateSelection();
-      }
-    });
-
-    // Initial state
-    updateSelection();
-  } else {
-    // First time - focus the input
-    setTimeout(() => {
-      newNameInput.focus();
-      newNameInput.select();
-    }, 100);
-  }
+  // Focus and select the input
+  setTimeout(() => {
+    input.focus();
+    input.select();
+  }, 100);
 
   // Add hover effects
-  confirmBtn.addEventListener('mouseenter', () => {
-    confirmBtn.style.background = '#4b5563';
+  createBtn.addEventListener('mouseenter', () => {
+    createBtn.style.background = '#059669';
   });
-  confirmBtn.addEventListener('mouseleave', () => {
-    if (!confirmBtn.disabled) {
-      confirmBtn.style.background = '#374151';
+  createBtn.addEventListener('mouseleave', () => {
+    if (!createBtn.disabled) {
+      createBtn.style.background = '#10b981';
     }
   });
 
@@ -961,111 +952,57 @@ function createExportChoiceModalUI() {
   });
 
   // Handle input styling on focus
-  newNameInput.addEventListener('focus', () => {
-    if (!newNameInput.disabled) {
-      newNameInput.style.borderColor = '#374151';
-    }
+  input.addEventListener('focus', () => {
+    input.style.borderColor = '#10b981';
   });
-  newNameInput.addEventListener('blur', () => {
-    if (!newNameInput.disabled) {
-      newNameInput.style.borderColor = '#e5e7eb';
-    }
+  input.addEventListener('blur', () => {
+    input.style.borderColor = '#e5e7eb';
   });
 
-  // Handle confirm button click
-  confirmBtn.addEventListener('click', () => {
-    if (hasExisting && existingRadio && existingRadio.checked) {
-      handleUseExistingSpreadsheet();
-    } else {
-      handleCreateNewSpreadsheet(newNameInput.value.trim());
-    }
-  });
+  // Handle create button click
+  createBtn.addEventListener('click', () => handleCreateSpreadsheet(input.value.trim()));
 
   // Handle Enter key in input
-  newNameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !newNameInput.disabled) {
-      handleCreateNewSpreadsheet(newNameInput.value.trim());
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      handleCreateSpreadsheet(input.value.trim());
     }
   });
 
   // Handle cancel
-  cancelBtn.addEventListener('click', closeExportModal);
+  cancelBtn.addEventListener('click', closeNamingModal);
 
   // Close if clicking the backdrop
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
-      closeExportModal();
+      closeNamingModal();
     }
   });
 }
 
 /**
- * Handle using the existing spreadsheet.
+ * Handle spreadsheet creation with user-provided name.
  */
-async function handleUseExistingSpreadsheet() {
-  const confirmBtn = document.getElementById('export-confirm-btn');
-  const cancelBtn = document.getElementById('export-cancel-btn');
-  const statusEl = document.getElementById('export-status');
-
-  // Disable inputs during export
-  confirmBtn.disabled = true;
-  cancelBtn.disabled = true;
-  confirmBtn.textContent = 'Exporting...';
-  confirmBtn.style.background = '#6b7280';
-  confirmBtn.style.cursor = 'wait';
-
-  try {
-    showExportStatus('Exporting to existing spreadsheet...', 'info');
-
-    // Close modal
-    closeExportModal();
-
-    // Update main button to show "Exporting..." status
-    const exportButton = document.getElementById(setupState.exportType === 'FH' ? 'fh-export-btn' : 'sh-export-btn');
-    if (exportButton) {
-      const textSpan = exportButton.querySelector('span');
-      if (textSpan) textSpan.textContent = 'Exporting...';
-    }
-
-    // Trigger the export with the existing spreadsheet
-    await performExport(setupState.existingSpreadsheetId);
-
-  } catch (error) {
-    console.error('Error exporting:', error);
-    showExportStatus(`Error: ${error.message}`, 'error');
-    
-    // Re-enable inputs
-    confirmBtn.disabled = false;
-    cancelBtn.disabled = false;
-    confirmBtn.textContent = 'Export';
-    confirmBtn.style.background = '#374151';
-    confirmBtn.style.cursor = 'pointer';
-  }
-}
-
-/**
- * Handle creating a new spreadsheet with user-provided name.
- */
-async function handleCreateNewSpreadsheet(name) {
-  const confirmBtn = document.getElementById('export-confirm-btn');
-  const cancelBtn = document.getElementById('export-cancel-btn');
-  const input = document.getElementById('new-spreadsheet-name');
-  const statusEl = document.getElementById('export-status');
+async function handleCreateSpreadsheet(name) {
+  const createBtn = document.getElementById('naming-create-btn');
+  const cancelBtn = document.getElementById('naming-cancel-btn');
+  const input = document.getElementById('spreadsheet-name-input');
+  const statusEl = document.getElementById('naming-status');
 
   // Validate name
   if (!name || name.length === 0) {
-    showExportStatus('Please enter a spreadsheet name', 'error');
+    showNamingStatus('Please enter a spreadsheet name', 'error');
     input.focus();
     return;
   }
 
   // Disable inputs during creation
-  confirmBtn.disabled = true;
+  createBtn.disabled = true;
   cancelBtn.disabled = true;
-  if (input) input.disabled = true;
-  confirmBtn.textContent = 'Creating...';
-  confirmBtn.style.background = '#6b7280';
-  confirmBtn.style.cursor = 'wait';
+  input.disabled = true;
+  createBtn.textContent = 'Creating...';
+  createBtn.style.background = '#6b7280';
+  createBtn.style.cursor = 'wait';
 
   try {
     // Get OAuth token
@@ -1075,19 +1012,16 @@ async function handleCreateNewSpreadsheet(name) {
       setupState.oauthToken = response.token;
     }
 
-    showExportStatus('Creating your spreadsheet...', 'info');
+    showNamingStatus('Creating your spreadsheet...', 'info');
 
     // Create the spreadsheet
     const sheet = await createNewSpreadsheet(setupState.oauthToken, name);
     
-    showExportStatus('Saving spreadsheet...', 'success');
+    showNamingStatus('Saving spreadsheet...', 'success');
 
-    // Save the spreadsheet ID and name
+    // Save the spreadsheet ID
     await new Promise((resolve, reject) => {
-      chrome.storage.sync.set({
-        spreadsheetId: sheet.spreadsheetId,
-        spreadsheetName: name
-      }, () => {
+      chrome.storage.sync.set({ spreadsheetId: sheet.spreadsheetId }, () => {
         if (chrome.runtime.lastError) {
           reject(new Error(chrome.runtime.lastError.message));
         } else {
@@ -1098,32 +1032,25 @@ async function handleCreateNewSpreadsheet(name) {
 
     console.log('✓ Spreadsheet created and ID saved:', sheet.spreadsheetId);
     
-    showExportStatus('Exporting your data...', 'success');
+    showNamingStatus('Exporting your data...', 'success');
 
     // Close modal
-    closeExportModal();
-
-    // Update main button to show "Exporting..." status
-    const exportButton = document.getElementById(setupState.exportType === 'FH' ? 'fh-export-btn' : 'sh-export-btn');
-    if (exportButton) {
-      const textSpan = exportButton.querySelector('span');
-      if (textSpan) textSpan.textContent = 'Exporting...';
-    }
+    closeNamingModal();
 
     // Trigger the export with the new spreadsheet
     await performExport(sheet.spreadsheetId);
 
   } catch (error) {
     console.error('Error creating spreadsheet:', error);
-    showExportStatus(`Error: ${error.message}`, 'error');
+    showNamingStatus(`Error: ${error.message}`, 'error');
     
     // Re-enable inputs
-    confirmBtn.disabled = false;
+    createBtn.disabled = false;
     cancelBtn.disabled = false;
-    if (input) input.disabled = false;
-    confirmBtn.textContent = 'Export';
-    confirmBtn.style.background = '#374151';
-    confirmBtn.style.cursor = 'pointer';
+    input.disabled = false;
+    createBtn.textContent = 'Create Spreadsheet';
+    createBtn.style.background = '#10b981';
+    createBtn.style.cursor = 'pointer';
   }
 }
 
@@ -1149,32 +1076,6 @@ async function performExport(spreadsheetId) {
     if (!exportButton) return;
     
     const textSpan = exportButton.querySelector('span');
-    
-    // Handle spreadsheet deleted/invalid error - clear saved ID and show modal again
-    if (finalResponse?.status === "error" &&
-        (finalResponse?.message?.includes('404') ||
-         finalResponse?.message?.includes('not found') ||
-         finalResponse?.message?.includes('deleted'))) {
-      console.log("Spreadsheet no longer exists during export - clearing saved ID...");
-      
-      // Clear the invalid spreadsheet ID and name
-      chrome.storage.sync.remove(['spreadsheetId', 'spreadsheetName'], () => {
-        // Show the choice modal again (will only show "create new" option)
-        showExportChoiceModal(setupState.exportData, setupState.sheetName, setupState.exportType);
-      });
-      
-      // Reset button
-      if (textSpan) textSpan.textContent = "Export Labs";
-      exportButton.style.background = "#1f2937";
-      exportButton.disabled = false;
-      exportButton.style.cursor = "pointer";
-      exportButton.style.opacity = "1";
-      
-      alert("The saved spreadsheet no longer exists. Please choose a new spreadsheet.");
-      return;
-    }
-    
-    // Handle successful export
     if (finalResponse?.status === "ok") {
       const sheetUrl = `https://docs.google.com/spreadsheets/d/${finalResponse.spreadsheetId}/edit`;
       const state = { rowCount: finalResponse.rowCount, sheetUrl: sheetUrl };
@@ -1184,25 +1085,17 @@ async function performExport(spreadsheetId) {
         updateSHButtonState(exportButton, state);
       }
     } else {
-      // Handle other errors
       if (textSpan) textSpan.textContent = "Export Failed";
       exportButton.style.background = "#ef4444";
-      console.error("Export error:", finalResponse?.message);
-      
-      // Reset after 3 seconds
-      setTimeout(() => {
-        if (textSpan) textSpan.textContent = "Export Labs";
-        exportButton.style.background = "#1f2937";
-      }, 3000);
     }
   });
 }
 
 /**
- * Show status message in the export modal.
+ * Show status message in the naming modal.
  */
-function showExportStatus(message, type = 'info') {
-  const statusEl = document.getElementById('export-status');
+function showNamingStatus(message, type = 'info') {
+  const statusEl = document.getElementById('naming-status');
   if (!statusEl) return;
   
   const colors = {
@@ -1218,10 +1111,10 @@ function showExportStatus(message, type = 'info') {
 }
 
 /**
- * Close and remove the export modal.
+ * Close and remove the naming modal.
  */
-function closeExportModal() {
-  const modal = document.getElementById('labsaver-export-modal');
+function closeNamingModal() {
+  const modal = document.getElementById('labsaver-naming-modal');
   if (modal) {
     modal.remove();
   }

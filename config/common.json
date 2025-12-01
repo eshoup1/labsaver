@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "LabSaver - Lab Result Exporter",
   "short_name": "LabSaver",
-  "version": "2.0.5",
+  "version": "2.2.4",
   "author": "Eric Shoup",
   "description": "Export lab results from multiple providers to Google Sheets.",
   "homepage_url": "https://github.com/eshoup1/labsaver/blob/main/PRIVACY_POLICY.md",
@@ -14,7 +14,9 @@
     "https://my.functionhealth.com/*",
     "https://production-member-app-mid-lhuqotpy2a-ue.a.run.app/*",
     "https://myhealthonline.sutterhealth.org/*",
-    "https://sheets.googleapis.com/*"
+    "https://sheets.googleapis.com/*",
+    "https://www.googleapis.com/*",
+    "https://apis.google.com/*"
   ],
   "background": {
     "service_worker": "background.js",
