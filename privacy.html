@@ -67,7 +67,7 @@
     
     <h1>Privacy Policy for LabSaver - Health Data Exporter</h1>
     
-    <p class="last-updated"><strong>Last Updated:</strong> January 17, 2025</p>
+    <p class="last-updated"><strong>Last Updated:</strong> December 2, 2025</p>
 
     <h2>Overview</h2>
     <p>LabSaver is committed to protecting your privacy. This privacy policy explains how our Chrome extension handles your health data.</p>
@@ -115,11 +115,20 @@
         <li>Requires OAuth 2.0 authentication</li>
         <li>We only request the minimum necessary permissions:
             <ul>
-                <li><code>https://www.googleapis.com/auth/spreadsheets</code> - To create and write to sheets</li>
+                <li><code>https://www.googleapis.com/auth/drive.file</code> - Limited access to only files the extension creates or you explicitly select</li>
                 <li><code>https://www.googleapis.com/auth/userinfo.email</code> - To identify your Google account</li>
             </ul>
         </li>
     </ul>
+
+    <div class="highlight">
+        <p><strong>Privacy Enhancement (v2.3.0):</strong> We use the restricted <code>drive.file</code> scope instead of the broader <code>spreadsheets</code> scope. This means the extension can <strong>only</strong> access Google Sheets files that:</p>
+        <ul>
+            <li>The extension creates for you, OR</li>
+            <li>You explicitly select through the file picker</li>
+        </ul>
+        <p>The extension <strong>cannot</strong> access any of your other Google Drive files or spreadsheets. This limited scope ensures maximum privacy and security for your data.</p>
+    </div>
 
     <h3>Health Portals</h3>
     <ul>
