@@ -4,6 +4,10 @@
   "description": "Chrome extension to export lab results to Google Sheets",
   "type": "module",
   "scripts": {
+    "build:dev": "NODE_ENV=development node scripts/build.js",
+    "build:prod": "NODE_ENV=production node scripts/build.js",
+    "package": "npm run build:prod",
+    "clean": "rm -rf dist/ *.zip",
     "build:quest-map": "node scripts/buildQuestLoincMap.js",
     "validate:quest-map": "node scripts/validateQuestLoincMap.js",
     "test": "node tests/loinc-derivation.test.js",
@@ -18,6 +22,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "archiver": "^7.0.1",
     "axios": "^1.6.2",
     "cheerio": "^1.0.0-rc.12"
   },

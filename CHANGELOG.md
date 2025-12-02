@@ -5,6 +5,84 @@ All notable changes to the LabSaver - Health Data Exporter extension will be doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2025-12-02
+
+### Changed - CRITICAL OAUTH COMPLIANCE UPDATE
+- **OAuth Scope Migration**: Migrated from `spreadsheets` scope to `drive.file` scope to comply with Google's OAuth verification requirements
+- **API Changes**: File creation now uses Google Drive API (`drive/v3/files`) instead of Sheets API
+- **Compliance**: Eliminates need for annual CASA security assessment and OAuth verification
+- **User Impact**: Existing users will need to re-authorize the extension with the new scope
+- **Security**: Reduced permissions - app now only accesses files explicitly created or selected by user
+
+### Technical Details
+- Updated OAuth scope from `https://www.googleapis.com/auth/spreadsheets` to `https://www.googleapis.com/auth/drive.file`
+- Modified `createSpreadsheet()` function in [`background.js`](src/background.js) to use Drive API
+- Modified `createNewSpreadsheet()` function in [`content.js`](src/content.js) to use Drive API
+- All data writing operations remain unchanged (Sheets API still used for data operations)
+- Maintained backward compatibility with existing user workflows
+
+### Files Modified
+- [`config/common.json`](config/common.json) - Version bump to 2.3.0
+- [`config/production.json`](config/production.json) - OAuth scope update
+- [`src/background.js`](src/background.js) - Drive API integration for file creation
+- [`src/content.js`](src/content.js) - Drive API integration for file creation
+
+### Migration Notes
+- Users will see a new OAuth consent screen requesting `drive.file` permission
+- Previously authorized users must re-authorize with the new scope
+- No data loss or functionality changes for end users
+- See [`OAUTH_SCOPE_MIGRATION_V2.3.0.md`](OAUTH_SCOPE_MIGRATION_V2.3.0.md) for complete technical details
+
+## [2.0.5] - 2024-01-27
+
+### Fixed
+- Added automatic button injection after login on Function Health without requiring page refresh
+- Implemented SPA navigation detection to handle client-side routing
+- Button now appears automatically when navigating from login page to authenticated pages
+
+### Technical
+- Added `setupNavigationDetection()` function with URL polling and popstate listener
+- Detects URL changes every 500ms and re-runs authentication check
+- Prevents duplicate button injection with existing ID check
+
+## [2.0.5] - 2024-11-26
+
+### Fixed (Critical)
+- Added authentication check to prevent button showing when user not logged in
+- Added export state management so button remembers export and can reopen sheet
+- Added sheet URL to export responses for proper button click handling
+
+### Fixed
+- Contents tab now uses custom sort order (Export, Definitions, Latest, Table) instead of alphabetical
+- Export button now stays green and clickable after successful export, opening the Google Sheet when clicked
+- Button no longer resets after 3 seconds
+- Sutter Health Export Labs button now correctly right-aligned (matching Function Health)
+
+### Changed
+- Improved button UX: successful export button becomes a direct link to the exported spreadsheet
+- Tab sorting in Contents now follows logical order: Export → Definitions → Latest → Table
+- Simplified Sutter Health button positioning code to match Function Health approach
+
+## [2.0.4] - 2024-11-26
+
+### Added
+- **Environment-Based Build System**: Introduced a Node.js-based build system ([`scripts/build.js`](scripts/build.js)) that supports `development` and `production` environments.
+- **Separate Dev/Prod OAuth Configurations**: Created `config/` directory to manage separate OAuth credentials for each environment, enhancing security.
+- **Automated Manifest Generation**: The build script now automatically generates `manifest.json` by merging a common config with an environment-specific one.
+- **Comprehensive Documentation**: Added new documentation for architecture, development, release process, and AI assistant guidance.
+
+### Changed
+- **Consolidated Codebase**: Merged the legacy `function-health-exporter` and `lab-result-exporter` directories into a single, unified project structure.
+- **Moved Source Files**: All extension source code is now located in the `src/` directory, creating a single source of truth.
+- **Replaced Build Script**: Replaced the old `package-extension.sh` script with the more robust `scripts/build.js`.
+
+### Fixed
+- **Version 2.0.3 Regression**: The new build system fundamentally fixes the regression issues from v2.0.3, where manual file management led to a broken extension. The automated process ensures all files from `src/` are included in every build.
+- **Build System ES Module Compatibility**: The build script is an ES module (`"type": "module"` in `package.json`), ensuring compatibility with modern Node.js features.
+
+### Security
+- **Production OAuth Credentials Excluded**: The `config/production.json` file, which holds the production OAuth client ID, is now listed in `.gitignore` and is never committed to the repository, protecting it from exposure.
+
 ## [2.0.2] - 2025-11-21
 
 ### Fixed

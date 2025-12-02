@@ -1,5 +1,5 @@
-// 🚀 LabSaver v2.0 - UPDATED CODE LOADED
-console.log("🚀 LabSaver v2.0 - Multi-Provider Lab Exporter");
+// 🚀 LabSaver v2.3.0 - OAuth Compliance Update (drive.file scope)
+console.log("🚀 LabSaver v2.3.0 - Multi-Provider Lab Exporter");
 
 /**
  * LabSaver - Background Service Worker
@@ -82,18 +82,20 @@ function getAuthToken(interactive = true) {
 }
 
 /**
- * Get spreadsheet ID from storage or use default
+ * Get spreadsheet ID from storage
+ * Returns null if not set - user must select via picker
  */
 function getSpreadsheetId() {
   return new Promise((resolve) => {
     chrome.storage.sync.get(["spreadsheetId"], (result) => {
-      resolve(result.spreadsheetId || DEFAULT_SHEET_ID);
+      resolve(result.spreadsheetId || null);
     });
   });
 }
 
 /**
- * Create a new Google Sheet
+ * Create a new Google Sheet using Drive API
+ * Uses drive.file scope for minimal permissions
  */
 async function createSpreadsheet(sheetName = 'Lab Results') {
   const token = await getAuthToken(true);
@@ -101,7 +103,7 @@ async function createSpreadsheet(sheetName = 'Lab Results') {
   console.log(`Creating spreadsheet with name: "${sheetName}"`);
   
   const response = await fetch(
-    'https://sheets.googleapis.com/v4/spreadsheets',
+    'https://www.googleapis.com/drive/v3/files',
     {
       method: 'POST',
       headers: {
@@ -109,9 +111,8 @@ async function createSpreadsheet(sheetName = 'Lab Results') {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        properties: {
-          title: sheetName
-        }
+        name: sheetName,
+        mimeType: 'application/vnd.google-apps.spreadsheet'
       })
     }
   );
@@ -124,13 +125,10 @@ async function createSpreadsheet(sheetName = 'Lab Results') {
   }
 
   const data = await response.json();
-  const spreadsheetId = data.spreadsheetId;
+  const spreadsheetId = data.id;
   
   console.log(`✓ Created spreadsheet: ${spreadsheetId}`);
   console.log(`View at: https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`);
-  
-  // Don't delete Sheet1 yet - we'll let the first sheet creation handle it
-  // This avoids the issue of having a spreadsheet with no sheets
   
   return spreadsheetId;
 }
@@ -328,12 +326,16 @@ async function processSutterHealthExport(rows, sheetName = 'Lab Results') {
   console.log(`Sheet Name: ${sheetName}`);
   console.log(`Received ${rows.length} component results from content script`);
   
-  // Get or create spreadsheet
+  // Check if spreadsheet ID is set
+  const spreadsheetId = await getSpreadsheetId();
+  if (!spreadsheetId) {
+    console.log("❌ No spreadsheet selected - user must use picker");
+    throw new Error('No spreadsheet selected. Please select a spreadsheet first.');
+  }
+  
   console.log("\n--- Writing to Google Sheets ---");
   const token = await getAuthToken(true);
-  
-  // Use getOrCreateSpreadsheet with the provided sheet name
-  const spreadsheetId = await getOrCreateSpreadsheet(sheetName);
+  console.log(`✓ Using spreadsheet: ${spreadsheetId}`);
   
   // Ensure SH_Export sheet exists
   await ensureSheetExists(token, spreadsheetId, "SH_Export");
@@ -1483,9 +1485,24 @@ async function createOrUpdateContentsTab(token, spreadsheetId, tabsMetadata) {
       });
     }
     
-    // Step 3: Sort tabs alphabetically by name
-    const sortedTabNames = Array.from(existingTabs.keys()).sort();
-    console.log(`  - Total tabs after merge: ${sortedTabNames.length}`);
+    // Step 3: Sort tabs in custom order: Export, Definitions, Latest, Table, then alphabetically
+    const customOrder = ['FH_Export', 'FH_Definitions', 'FH_Latest', 'FH_Table', 'SH_Export'];
+    const sortedTabNames = Array.from(existingTabs.keys()).sort((a, b) => {
+      const aIndex = customOrder.indexOf(a);
+      const bIndex = customOrder.indexOf(b);
+      
+      // If both are in custom order, sort by their position
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+      // If only a is in custom order, it comes first
+      if (aIndex !== -1) return -1;
+      // If only b is in custom order, it comes first
+      if (bIndex !== -1) return 1;
+      // Otherwise, sort alphabetically
+      return a.localeCompare(b);
+    });
+    console.log(`  - Total tabs after custom sort: ${sortedTabNames.length}`);
     
     // Step 4: Get sheet metadata to retrieve sheet IDs (gid) for hyperlinks
     const metadataResponse = await fetch(
@@ -1721,11 +1738,15 @@ async function syncSheetWithData(rows, sheetName = 'Lab Results') {
   console.log("=== syncSheetWithData START ===");
   console.log(`Processing ${rows.length} rows`);
   
+  // Check if spreadsheet ID is set
+  const spreadsheetId = await getSpreadsheetId();
+  if (!spreadsheetId) {
+    console.log("❌ No spreadsheet selected - user must use picker");
+    throw new Error('No spreadsheet selected. Please select a spreadsheet first.');
+  }
+  
   const token = await getAuthToken(true);
   console.log("✓ Auth token obtained");
-  
-  // Get or create spreadsheet with the custom name
-  const spreadsheetId = await getOrCreateSpreadsheet(sheetName);
   console.log(`✓ Using spreadsheet: ${spreadsheetId}`);
   console.log(`   Sheet name: "${sheetName}"`);
   console.log(`   View at: https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`);
@@ -2054,6 +2075,20 @@ async function createTableSheet(rows) {
  * Handle messages from content script
  */
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // Handle OAuth token request from content script
+  if (msg.type === "GET_AUTH_TOKEN") {
+    (async () => {
+      try {
+        const token = await getAuthToken(true); // interactive = true
+        sendResponse({ success: true, token: token });
+      } catch (err) {
+        console.error("Error getting auth token:", err);
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
+    return true; // Indicates async response
+  }
+  
   // Handle storage get request
   if (msg.type === "GET_STORAGE") {
     chrome.storage.sync.get(msg.keys, (result) => {
@@ -2184,6 +2219,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({
           status: "ok",
           rowCount: rows.length,
+          spreadsheetId: spreadsheetId,
+          sheetUrl: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`,
           definitionsCount: definitionsRows.length - 1,
           latestValuesCount: latestValuesRows.length - 1,
           tableStats: tableStats
@@ -2217,7 +2254,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({
           status: "ok",
           rowCount: result.rowCount,
-          spreadsheetId: result.spreadsheetId
+          spreadsheetId: result.spreadsheetId,
+          sheetUrl: `https://docs.google.com/spreadsheets/d/${result.spreadsheetId}/edit`
         });
       } catch (err) {
         console.log("\n" + "=".repeat(60));

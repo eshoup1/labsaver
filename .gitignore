@@ -46,8 +46,12 @@ $RECYCLE.BIN/
 *.pem
 *.crx
 
-# Distribution packages (keep source, ignore built packages)
-labsaver-v*.zip
+# Build outputs
+dist/
+*.zip
+
+# Production secrets
+config/production.json
 
 # Logs
 *.log
@@ -55,6 +59,5 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# User-specific files (OAuth credentials)
-# Note: Users should update manifest.json with their own OAuth client ID
-data/user_quest_codes.json
+# User-specific files
+src/data/user_quest_codes.json

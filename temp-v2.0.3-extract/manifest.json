@@ -2,9 +2,9 @@
   "manifest_version": 3,
   "name": "LabSaver - Lab Result Exporter",
   "short_name": "LabSaver",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "author": "Eric Shoup",
-  "description": "Export lab results from multiple providers to Google Sheets.",
+  "description": "Export lab results from Function Health and Sutter Health to Google Sheets in a privacy-first manner",
   "homepage_url": "https://github.com/eshoup1/labsaver/blob/main/PRIVACY_POLICY.md",
   
   "permissions": ["identity", "storage"],
@@ -13,7 +13,8 @@
     "https://my.functionhealth.com/*",
     "https://production-member-app-mid-lhuqotpy2a-ue.a.run.app/*",
     "https://myhealthonline.sutterhealth.org/*",
-    "https://sheets.googleapis.com/*"
+    "https://sheets.googleapis.com/*",
+    "https://apis.google.com/*"
   ],
   
   "background": {
@@ -51,7 +52,7 @@
   
   "web_accessible_resources": [
     {
-      "resources": ["icons/*.png"],
+      "resources": ["icons/*.png", "picker.html", "picker.js"],
       "matches": [
         "https://my.functionhealth.com/*",
         "https://myhealthonline.sutterhealth.org/*"
@@ -60,9 +61,9 @@
   ],
   
   "oauth2": {
-    "client_id": "699618980300-c7jn8t9kccdfm00c0704a29mduovqpe4.apps.googleusercontent.com",
+    "client_id": "609855124330-qhqklvllcvmft7v8f9k42csfqupu1p6d.apps.googleusercontent.com",
     "scopes": [
-      "https://www.googleapis.com/auth/spreadsheets",
+      "https://www.googleapis.com/auth/drive.file",
       "https://www.googleapis.com/auth/userinfo.email"
     ]
   }

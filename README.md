@@ -1,6 +1,23 @@
 # LabSaver - Health Data Exporter
 
-A Chrome extension that exports lab results from multiple health providers to Google Sheets. Currently supports **Function Health** and **Sutter Health**.
+A Chrome extension that exports lab results from multiple health providers to Google Sheets.
+
+## Quick Start (for Developers)
+
+1.  **Clone the repository and install dependencies:**
+    ```bash
+    git clone https://github.com/YOUR_USERNAME/labsaver.git
+    cd labsaver
+    npm install
+    ```
+2.  **Set up your development OAuth credentials** by following the [`OAUTH_SETUP.md`](./OAUTH_SETUP.md) guide.
+3.  **Build the development version:**
+    ```bash
+    npm run build:dev
+    ```
+4.  **Load the extension in Chrome** from the `dist/` directory.
+
+For a complete guide, see the [`DEVELOPMENT.md`](./DEVELOPMENT.md) documentation.
 
 ## Features
 
@@ -37,39 +54,9 @@ A Chrome extension that exports lab results from multiple health providers to Go
 - One-click export with automatic authentication
 - No data merging (yet) - each system maintains its own tabs
 
-## Installation
+## Installation (for Users)
 
-### Option 1: Chrome Web Store (Recommended)
-
-**Coming Soon!** Once published, you'll be able to install directly from the Chrome Web Store:
-
-1. Visit the [LabSaver Chrome Web Store page](#) (link will be added after publication)
-2. Click "Add to Chrome"
-3. Click "Add extension" to confirm
-4. The extension icon will appear in your Chrome toolbar
-
-### Option 2: Developer Mode (For Development)
-
-If you want to use the development version or contribute to the project:
-
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/labsaver.git
-   cd labsaver/lab-result-exporter
-   ```
-
-2. Set up OAuth credentials (required):
-   - Follow the instructions in [OAUTH_SETUP.md](./OAUTH_SETUP.md)
-   - Update `manifest.json` with your OAuth client ID
-
-3. Load the extension in Chrome:
-   - Open Chrome and navigate to `chrome://extensions/`
-   - Enable "Developer mode" in the top right
-   - Click "Load unpacked"
-   - Select the `lab-result-exporter` directory
-   - The extension will appear in your extensions list
-
-**Note:** For development installation, you must configure your own OAuth credentials. See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for detailed instructions.
+**Coming Soon!** Once published, you will be able to install LabSaver directly from the Chrome Web Store.
 
 ## Usage
 
@@ -109,27 +96,11 @@ If you want to use the development version or contribute to the project:
 - collectionTimestampsDisplay, resultingLabName
 - **Derived_LOINC** - Standardized LOINC code (when mapping exists)
 
-## Technical Details
+## Architecture and Build System
 
-### Architecture
-- **Manifest V3** Chrome Extension
-- **Content Script** (`content.js`) - Injects export buttons and handles data fetching
-- **Background Service Worker** (`background.js`) - Processes data and writes to Google Sheets
-- **Google Sheets API** - For data storage and sharing
+The extension uses a consolidated codebase and a Node.js-based build system that handles environment-specific configurations (development vs. production). It automatically generates the `manifest.json` and packages the extension for distribution.
 
-### Storage
-- `masterSheetId` - The shared Google Sheet ID for both FH and SH exports
-- `spreadsheetId` - Temporary storage during FH export process
-- `lastSheetName` - Remembers the last sheet name used
-
-### API Endpoints
-
-**Function Health:**
-- `https://production-member-app-mid-lhuqotpy2a-ue.a.run.app/api/v1/results-report`
-
-**Sutter Health:**
-- `POST /MHO/api/test-results/GetList` - Get list of lab orders
-- `POST /MHO/api/test-results/GetDetails` - Get details for each order
+For a complete explanation of the project structure, build process, and design decisions, please see the full [`ARCHITECTURE.md`](./ARCHITECTURE.md) document.
 
 ## Privacy & Security
 
@@ -155,7 +126,9 @@ If you want to use the development version or contribute to the project:
 ### Authentication
 - Uses your existing browser session cookies for health portal access
 - Uses OAuth 2.0 for Google Sheets access (standard Google security)
+- **OAuth Scope**: Uses minimal `drive.file` scope - only accesses files you explicitly create or select
 - All credentials stay in your browser
+- Enhanced privacy through restricted permissions (v2.3.0+)
 
 ### Open Source
 - All code is open source and available for review
@@ -228,18 +201,15 @@ For complete documentation, see [QUEST_LOINC_MAPPING.md](./QUEST_LOINC_MAPPING.m
 - Expanded LOINC mapping coverage
 - Automatic LOINC code suggestions for unmapped tests
 
-## Documentation
+## Documentation Index
 
-- [FAQ](./FAQ.md) - Frequently asked questions
-- [Privacy Policy](./PRIVACY_POLICY.md) - How we handle your data
-- [OAuth Setup Guide](./OAUTH_SETUP.md) - Configure Google OAuth credentials
-- [Publication Guide](./PUBLICATION_GUIDE.md) - How to publish to Chrome Web Store
-- [Store Listing](./STORE_LISTING.md) - Chrome Web Store listing details
-- [Quest LOINC Mapping](./QUEST_LOINC_MAPPING.md) - Quest code mapping documentation
-- [LOINC Verification](./LOINC_VERIFICATION.md) - How to verify LOINC codes
-- [LOINC Mappings](./LOINC_MAPPINGS.md) - Complete mapping reference
-- [Contributing](./CONTRIBUTING.md) - Contribution guidelines
-- [Changelog](./CHANGELOG.md) - Version history
+- **[`ARCHITECTURE.md`](./ARCHITECTURE.md)**: A deep dive into the project structure, build system, and design decisions.
+- **[`DEVELOPMENT.md`](./DEVELOPMENT.md)**: A complete guide for setting up a local environment and contributing to the project.
+- **[`RELEASE_PROCESS.md`](./RELEASE_PROCESS.md)**: Step-by-step instructions for publishing new versions to the Chrome Web Store.
+- **[`AI_CONTEXT.md`](./AI_CONTEXT.md)**: Essential rules and context for AI assistants working on this codebase.
+- **[`CONTRIBUTING.md`](./CONTRIBUTING.md)**: Guidelines for contributing to the project.
+- **[`CHANGELOG.md`](./CHANGELOG.md)**: A complete history of changes for each version.
+- **[`OAUTH_SETUP.md`](./OAUTH_SETUP.md)**: Instructions for creating and configuring Google OAuth credentials.
 
 ## License
 

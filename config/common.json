@@ -1,0 +1,62 @@
+{
+  "manifest_version": 3,
+  "name": "LabSaver - Lab Result Exporter",
+  "short_name": "LabSaver",
+  "version": "2.3.0",
+  "author": "Eric Shoup",
+  "description": "Export lab results from multiple providers to Google Sheets.",
+  "homepage_url": "https://github.com/eshoup1/labsaver/blob/main/PRIVACY_POLICY.md",
+  "permissions": [
+    "identity",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://my.functionhealth.com/*",
+    "https://production-member-app-mid-lhuqotpy2a-ue.a.run.app/*",
+    "https://myhealthonline.sutterhealth.org/*",
+    "https://sheets.googleapis.com/*",
+    "https://www.googleapis.com/*",
+    "https://apis.google.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://my.functionhealth.com/*",
+        "https://myhealthonline.sutterhealth.org/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "externally_connectable": {
+    "matches": [
+      "https://my.functionhealth.com/*",
+      "https://myhealthonline.sutterhealth.org/*"
+    ]
+  },
+  "action": {
+    "default_title": "LabSaver - Export Health Data"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*.png"
+      ],
+      "matches": [
+        "https://my.functionhealth.com/*",
+        "https://myhealthonline.sutterhealth.org/*"
+      ]
+    }
+  ]
+}

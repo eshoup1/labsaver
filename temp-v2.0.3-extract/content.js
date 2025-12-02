@@ -7,6 +7,43 @@
 const isFunctionHealth = window.location.hostname === "my.functionhealth.com";
 const isSutterHealth = window.location.hostname === "myhealthonline.sutterhealth.org";
 
+/**
+ * Open the Google Picker to select a spreadsheet
+ */
+function openPicker() {
+  const pickerUrl = chrome.runtime.getURL('picker.html');
+  window.open(pickerUrl, 'LabSaver Picker', 'width=800,height=600');
+}
+
+/**
+ * Wait for spreadsheet selection
+ */
+function waitForSpreadsheetSelection() {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Spreadsheet selection timed out'));
+    }, 300000); // 5 minute timeout
+
+    // Poll for spreadsheet ID
+    const checkInterval = setInterval(async () => {
+      try {
+        const response = await chrome.runtime.sendMessage({
+          type: "GET_STORAGE",
+          keys: ['spreadsheetId']
+        });
+        
+        if (response?.success && response.data?.spreadsheetId) {
+          clearInterval(checkInterval);
+          clearTimeout(timeout);
+          resolve(response.data.spreadsheetId);
+        }
+      } catch (e) {
+        console.warn('Error checking for spreadsheet ID:', e);
+      }
+    }, 1000); // Check every second
+  });
+}
+
 function injectFunctionHealthButton() {
   // Check if extension context is valid
   if (!chrome?.runtime?.id) {
@@ -172,7 +209,55 @@ function injectFunctionHealthButton() {
       // Send data to background script for processing with sheet name
       chrome.runtime.sendMessage(
         { type: "FH_EXPORT_DATA", payload: data, sheetName: finalSheetName },
-        (response) => {
+        async (response) => {
+          // Handle picker required
+          if (response?.status === "picker_required") {
+            textSpan.textContent = "Select Spreadsheet...";
+            btn.style.background = "#3b82f6";
+            
+            try {
+              openPicker();
+              await waitForSpreadsheetSelection();
+              
+              // Retry export after spreadsheet selected
+              textSpan.textContent = "Retrying Export...";
+              chrome.runtime.sendMessage(
+                { type: "FH_EXPORT_DATA", payload: data, sheetName: finalSheetName },
+                (retryResponse) => {
+                  btn.disabled = false;
+                  btn.style.cursor = "pointer";
+                  btn.style.opacity = "1";
+                  
+                  if (retryResponse?.status === "ok") {
+                    textSpan.textContent = `✓ Exported ${retryResponse.rowCount} results!`;
+                    btn.style.background = "#10b981";
+                  } else {
+                    textSpan.textContent = "Export Failed";
+                    btn.style.background = "#ef4444";
+                    console.error("Export error:", retryResponse?.message);
+                  }
+                  
+                  setTimeout(() => {
+                    textSpan.textContent = "Export Labs";
+                    btn.style.background = "#1f2937";
+                  }, 3000);
+                }
+              );
+            } catch (e) {
+              btn.disabled = false;
+              btn.style.cursor = "pointer";
+              btn.style.opacity = "1";
+              textSpan.textContent = "Selection Cancelled";
+              btn.style.background = "#ef4444";
+              
+              setTimeout(() => {
+                textSpan.textContent = "Export Labs";
+                btn.style.background = "#1f2937";
+              }, 3000);
+            }
+            return;
+          }
+          
           btn.disabled = false;
           btn.style.cursor = "pointer";
           btn.style.opacity = "1";
@@ -451,7 +536,59 @@ function injectSutterHealthButton() {
           payload: { rows: allRows },
           sheetName: finalSheetName
         },
-        (response) => {
+        async (response) => {
+          // Handle picker required
+          if (response?.status === "picker_required") {
+            textSpan.textContent = "Select Spreadsheet...";
+            btn.style.background = "#3b82f6";
+            
+            try {
+              openPicker();
+              await waitForSpreadsheetSelection();
+              
+              // Retry export after spreadsheet selected
+              textSpan.textContent = "Retrying Export...";
+              chrome.runtime.sendMessage(
+                {
+                  type: "SH_EXPORT_ROWS",
+                  payload: { rows: allRows },
+                  sheetName: finalSheetName
+                },
+                (retryResponse) => {
+                  btn.disabled = false;
+                  btn.style.cursor = "pointer";
+                  btn.style.opacity = "1";
+                  
+                  if (retryResponse?.status === "ok") {
+                    textSpan.textContent = `✓ Exported ${retryResponse.rowCount} results!`;
+                    btn.style.background = "#10b981";
+                  } else {
+                    textSpan.textContent = "Export Failed";
+                    btn.style.background = "#ef4444";
+                    console.error("Export error:", retryResponse?.message);
+                  }
+                  
+                  setTimeout(() => {
+                    textSpan.textContent = "Export Labs";
+                    btn.style.background = "#1f2937";
+                  }, 3000);
+                }
+              );
+            } catch (e) {
+              btn.disabled = false;
+              btn.style.cursor = "pointer";
+              btn.style.opacity = "1";
+              textSpan.textContent = "Selection Cancelled";
+              btn.style.background = "#ef4444";
+              
+              setTimeout(() => {
+                textSpan.textContent = "Export Labs";
+                btn.style.background = "#1f2937";
+              }, 3000);
+            }
+            return;
+          }
+          
           btn.disabled = false;
           btn.style.cursor = "pointer";
           btn.style.opacity = "1";
