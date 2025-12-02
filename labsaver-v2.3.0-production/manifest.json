@@ -58,5 +58,12 @@
         "https://myhealthonline.sutterhealth.org/*"
       ]
     }
-  ]
+  ],
+  "oauth2": {
+    "client_id": "609855124330-qhqklvllcvmft7v8f9k42csfqupu1p6d.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/userinfo.email"
+    ]
+  }
 }

@@ -126,7 +126,9 @@ For a complete explanation of the project structure, build process, and design d
 ### Authentication
 - Uses your existing browser session cookies for health portal access
 - Uses OAuth 2.0 for Google Sheets access (standard Google security)
+- **OAuth Scope**: Uses minimal `drive.file` scope - only accesses files you explicitly create or select
 - All credentials stay in your browser
+- Enhanced privacy through restricted permissions (v2.3.0+)
 
 ### Open Source
 - All code is open source and available for review

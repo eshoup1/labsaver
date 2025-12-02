@@ -1,6 +1,6 @@
 # Privacy Policy for LabSaver - Health Data Exporter
 
-**Last Updated:** January 17, 2025
+**Last Updated:** December 2, 2025
 
 ## Overview
 
@@ -44,8 +44,14 @@ Your health data is stored in your personal Google Sheet, which you own and cont
 - Used to write data to your personal Google Sheet
 - Requires OAuth 2.0 authentication
 - We only request the minimum necessary permissions:
-  - `https://www.googleapis.com/auth/spreadsheets` - To create and write to sheets
+  - `https://www.googleapis.com/auth/drive.file` - Limited access to only files the extension creates or you explicitly select
   - `https://www.googleapis.com/auth/userinfo.email` - To identify your Google account
+
+**Privacy Enhancement (v2.3.0):** We use the restricted `drive.file` scope instead of the broader `spreadsheets` scope. This means the extension can **only** access Google Sheets files that:
+- The extension creates for you, OR
+- You explicitly select through the file picker
+
+The extension **cannot** access any of your other Google Drive files or spreadsheets. This limited scope ensures maximum privacy and security for your data.
 
 ### Health Portals
 - Function Health (my.functionhealth.com)

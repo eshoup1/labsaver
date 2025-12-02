@@ -5,6 +5,34 @@ All notable changes to the LabSaver - Health Data Exporter extension will be doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2025-12-02
+
+### Changed - CRITICAL OAUTH COMPLIANCE UPDATE
+- **OAuth Scope Migration**: Migrated from `spreadsheets` scope to `drive.file` scope to comply with Google's OAuth verification requirements
+- **API Changes**: File creation now uses Google Drive API (`drive/v3/files`) instead of Sheets API
+- **Compliance**: Eliminates need for annual CASA security assessment and OAuth verification
+- **User Impact**: Existing users will need to re-authorize the extension with the new scope
+- **Security**: Reduced permissions - app now only accesses files explicitly created or selected by user
+
+### Technical Details
+- Updated OAuth scope from `https://www.googleapis.com/auth/spreadsheets` to `https://www.googleapis.com/auth/drive.file`
+- Modified `createSpreadsheet()` function in [`background.js`](src/background.js) to use Drive API
+- Modified `createNewSpreadsheet()` function in [`content.js`](src/content.js) to use Drive API
+- All data writing operations remain unchanged (Sheets API still used for data operations)
+- Maintained backward compatibility with existing user workflows
+
+### Files Modified
+- [`config/common.json`](config/common.json) - Version bump to 2.3.0
+- [`config/production.json`](config/production.json) - OAuth scope update
+- [`src/background.js`](src/background.js) - Drive API integration for file creation
+- [`src/content.js`](src/content.js) - Drive API integration for file creation
+
+### Migration Notes
+- Users will see a new OAuth consent screen requesting `drive.file` permission
+- Previously authorized users must re-authorize with the new scope
+- No data loss or functionality changes for end users
+- See [`OAUTH_SCOPE_MIGRATION_V2.3.0.md`](OAUTH_SCOPE_MIGRATION_V2.3.0.md) for complete technical details
+
 ## [2.0.5] - 2024-01-27
 
 ### Fixed
