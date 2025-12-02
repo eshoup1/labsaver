@@ -61,3 +61,6 @@ yarn-error.log*
 
 # User-specific files
 src/data/user_quest_codes.json
+
+# Internal documentation (not for public repository)
+.internal/
