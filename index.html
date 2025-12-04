@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="qc8uxrNLJ5nCelb9wEuV-6hZ2EXRaSzC_5H9L_IVHB8" />
     <title>LabSaver Chrome Extension</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="src/icons/icon16.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="src/icons/icon48.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="src/icons/icon128.png">
+    <link rel="shortcut icon" href="src/icons/icon48.png">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -81,6 +87,48 @@
         section {
             margin: 40px 0;
         }
+        .cta-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        .cta-banner h2 {
+            color: white;
+            border: none;
+            margin: 0 0 20px 0;
+            padding: 0;
+            font-size: 2em;
+        }
+        .cta-banner p {
+            font-size: 1.2em;
+            margin: 15px 0 30px 0;
+            opacity: 0.95;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: white;
+            color: #667eea;
+            padding: 18px 40px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background-color: #f8f9fa;
+        }
+        .chrome-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
         @media (max-width: 768px) {
             body {
                 padding: 20px 15px;
@@ -90,6 +138,19 @@
             }
             h2 {
                 font-size: 1.5em;
+            }
+            .cta-banner {
+                padding: 30px 20px;
+            }
+            .cta-banner h2 {
+                font-size: 1.6em;
+            }
+            .cta-banner p {
+                font-size: 1em;
+            }
+            .cta-button {
+                padding: 15px 30px;
+                font-size: 1em;
             }
         }
     </style>
@@ -101,6 +162,18 @@
     
     <div class="description">
         <p><strong>LabSaver makes it easy to export your lab results from Function Health and Sutter Health directly to Google Sheets, giving you complete control over your health data.</strong></p>
+    </div>
+
+    <div class="cta-banner">
+        <div class="chrome-icon">🚀</div>
+        <h2>Get LabSaver Now!</h2>
+        <p>Install the Chrome extension and start exporting your lab results today</p>
+        <a href="https://chromewebstore.google.com/detail/labsaver-lab-result-expor/admmaiohdakockodgeikpngkpkkfcego"
+           class="cta-button"
+           target="_blank"
+           rel="noopener noreferrer">
+            Download from Chrome Web Store
+        </a>
     </div>
 
     <section>
